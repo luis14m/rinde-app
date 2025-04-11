@@ -88,14 +88,7 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
 
-                  <NavigationMenuItem>
-                    <Link href="/suscripcion" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        <CircleDollarSign className="w-4 h-4 mr-2" />
-                        Suscripcion
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
+                 
 
                   <NavigationMenuItem>
                     <Link href="/cuenta" legacyBehavior passHref>
