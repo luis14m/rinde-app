@@ -1,6 +1,5 @@
 
 import { Geist } from "next/font/google";
-
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { ThemeProvider } from "next-themes";
 import "./globals.css"
