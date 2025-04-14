@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CircleDollarSign, ListFilter, PlusCircle } from "lucide-react";
+import {ListFilter, PlusCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { signOutAction } from "@/app/actions";
 import { createSupabaseClient } from "@/utils/supabase/client";
