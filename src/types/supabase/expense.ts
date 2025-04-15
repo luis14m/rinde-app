@@ -40,7 +40,7 @@ export interface ExpenseFormData {
   rut: string;
   motivo: string;
   monto: number;
-  abono: number;
+  abono:number;
   rut_emisor: string;
   numero_documento: string;
   tipo_documento: string;

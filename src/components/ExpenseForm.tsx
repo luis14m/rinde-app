@@ -1,7 +1,7 @@
 "use client";
 
+import { Control, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,63 +14,73 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FileUploadZone } from "@/components/ui/FileUploadZone";
-import { TIPOS_DOCUMENTO, TYPES_MIME } from "@/types/supabase/expense";
-import { createExpense, uploadDocuments } from "@/services/supabase/expenseService";
 
+import { FileUploadZone } from "@/components/ui/FileUploadZone";
+import {
+  ExpenseFormData,
+  initialExpenseFormData,
+  TIPOS_DOCUMENTO,
+  TYPES_MIME,
+} from "@/types/supabase/expense";
+import {
+  createExpense,
+  uploadDocuments,
+} from "@/services/supabase/expenseService";
+import router from "next/router";
 
 // Esquema de validación con Zod
 const formSchema = z.object({
-  nombre: z.string().min(2, { message: "El nombre es requerido" }),
-  rut: z.string().min(9, { message: "El RUT es requerido" }),
-  motivo: z.string().min(5, { message: "El motivo es requerido" }),
-  monto: z
-  .string()
-  .min(1, { message: "El monto es requerido" })
-  .transform((val) => Number(val))
-  .refine((val) => !isNaN(val), { message: "El monto debe ser un número válido" }),
-abono: z
-  .string()
-  .min(1, { message: "El abono es requerido" })
-  .transform((val) => Number(val))
-  .refine((val) => !isNaN(val), { message: "El abono debe ser un número válido" }),
+  nombre: z.string().min(4, { message: "El nombre es requerido" }),
+  rut: z
+    .string()
+    .min(9, { message: "El RUT es requerido" })
+    .max(10, { message: "El RUT no puede tener más de 10 caracteres" }),
+
+  motivo: z.string().min(2, { message: "El motivo es requerido" }),
+
+  monto: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
+  abono: z.coerce
+    .number()
+    .min(0, { message: "El abono debe ser mayor o igual a 0" }),
+
   rut_emisor: z.string().min(9, { message: "El RUT del emisor es requerido" }),
-  numero_documento: z.string().min(1, { message: "El número de documento es requerido" }),
-  tipo_documento: z.string().min(1, { message: "El tipo de documento es requerido" }),
+  numero_documento: z
+    .string()
+    .min(1, { message: "El número de documento es requerido" }),
+  tipo_documento: z
+    .string()
+    .min(1, { message: "El tipo de documento es requerido" }),
   fecha: z.string().min(1, { message: "La fecha es requerida" }),
-  documentos: z.array(z.instanceof(File)).min(1, { message: "Debes subir al menos un documento" }),
+  documentos: z
+    .array(z.instanceof(File))
+    .min(1, { message: "Debes subir al menos un documento" }),
 });
 
+interface ApiResponse {
+  success: boolean;
+  error?: string;
+}
+
 export default function ExpenseForm() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [mensaje, setMensaje] = useState("");
+  const [mensaje, setMensaje] = useState<string>("");
 
   // Inicializar react-hook-form con Zod
-  const form = useForm({
+  const form = useForm<ExpenseFormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      nombre: "",
-      rut: "",
-      motivo: "",
-      monto: "",
-      abono: "",
-      rut_emisor: "",
-      numero_documento: "",
-      tipo_documento: "",
-      fecha: "",
-      documentos: [],
-    },
+    defaultValues: initialExpenseFormData,
   });
 
   // Función para manejar el envío del formulario
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setLoading(true);
-    setMensaje("");
-
     try {
       // Subir documentos a Supabase
       const uploadedDocuments = await uploadDocuments(data.documentos);
@@ -83,12 +93,12 @@ export default function ExpenseForm() {
       };
 
       // Enviar el gasto a la base de datos
-      const result = await createExpense(expenseData);
+      const result: ApiResponse | undefined = await createExpense(expenseData);
 
       if (result?.success) {
         setMensaje("Gasto guardado con éxito ✅");
         form.reset();
-        setTimeout(() => router.push("/home"), 300);
+        setTimeout(() => router.push("/rendiciones"), 300);
       } else {
         setMensaje(`Error: ${result?.error || "Error desconocido"}`);
       }
@@ -101,17 +111,15 @@ export default function ExpenseForm() {
   };
 
   return (
-
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      
-      <h1 className="text-2xl font-bold text-gray-500 mb-8 text-center">
+      <h1 className="text-2xl font-bold text-black mb-8 text-center">
         Registro de Gastos
       </h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Campo Nombre */}
           <FormField
-            control={form.control}
+            control={form.control as Control<ExpenseFormData>}
             name="nombre"
             render={({ field }) => (
               <FormItem>
@@ -163,7 +171,12 @@ export default function ExpenseForm() {
                 <FormItem>
                   <FormLabel>Monto</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Monto" {...field} />
+                    <Input
+                      type="number"
+                      placeholder="Monto"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -177,7 +190,12 @@ export default function ExpenseForm() {
                 <FormItem>
                   <FormLabel>Abono</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Abono" {...field} />
+                    <Input
+                      type="number"
+                      placeholder="Abono"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,7 +284,9 @@ export default function ExpenseForm() {
                 <FormControl>
                   <FileUploadZone
                     files={field.value}
-                    onFilesAdd={(files) => field.onChange([...field.value, ...files])}
+                    onFilesAdd={(files) =>
+                      field.onChange([...field.value, ...files])
+                    }
                     onFileRemove={(index) => {
                       const newFiles = [...field.value];
                       newFiles.splice(index, 1);
@@ -282,7 +302,11 @@ export default function ExpenseForm() {
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={() => router.push("/home")}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/rendiciones")}
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
@@ -291,7 +315,9 @@ export default function ExpenseForm() {
           </div>
 
           {/* Mensaje de estado */}
-          {mensaje && <p className="text-center mt-4 text-red-500">{mensaje}</p>}
+          {mensaje && (
+            <p className="text-center mt-4 text-red-500">{mensaje}</p>
+          )}
         </form>
       </Form>
     </div>

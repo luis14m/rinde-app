@@ -1,4 +1,4 @@
-import { createSupabaseClient } from "@/utils/supabase/client";
+import { createSupabaseClient } from "@/utils/supabase/server";
 
 export async function downloadDocument(publicUrl: string): Promise<boolean> {
   try {

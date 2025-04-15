@@ -1,20 +1,21 @@
-
 import { FileMetadata } from '@/types/supabase/expense';
-import { createSupabaseClient } from '@/utils/supabase/client';
+import { createSupabaseClient } from '@/utils/supabase/server';
 
 export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
+  const supabase = await createSupabaseClient();
+
+   const { data: { user } } = await supabase.auth.getUser();
+    
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const uploadPromises = files.map(async (file) => {
     try {
-      // Crear una carpeta única para cada sesión de subida usando un timestamp
-      //const timestamp = Date.now();
-      const safeFileName = encodeURIComponent(file.name);
-      const filePath = `${safeFileName}`;
-      console.log('filePath:', filePath);
+      // Create a unique folder for each upload session using user_id
+      const timestamp = Date.now();
+      const filePath = `${user.id}/uploads/${timestamp}/${file.name}`;
 
-      
-      const supabase = await createSupabaseClient();
-      
-      // Subir el archivo a Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('expense-documents')
         .upload(filePath, file, {
@@ -27,6 +28,7 @@ export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
         throw uploadError;
       }
 
+    
       // Obtener la URL pública del archivo subido
       //***SUBAPASE ENTREGA EL NOMBRE DE ARCHIVO CON UN 25 ANTES DEL ESPACIO  */
 
@@ -34,7 +36,7 @@ export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
       const { data: { publicUrl } } = supabase.storage
         .from('expense-documents')
         .getPublicUrl(filePath);
-      console.log('url publica obtenida:', publicUrl);
+      console.log('url publica obtenida:', publicUrl)
       // Reemplazar %2520 por %20
       const correctedUrl = publicUrl.replace(/%2520/g, '%20');
 

@@ -7,50 +7,41 @@ import { redirect } from "next/navigation";
 
 
 
-export async function createExpense(expense: ExpenseCreate): Promise<{ success: boolean; error?: string }> {
+export async function createExpense(expense: ExpenseCreate): Promise<void> {
 
   const supabase = await createSupabaseClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error) redirect("/error");
+  const { data: { user } } = await supabase.auth.getUser();
   
-  try {
-    const { data, error } = await supabase
-      .from("expenses")
-      .insert([expense])
-     // .select(); // Devuelve el registro insertado
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
 
-    if (error) {
-      console.error("Error guardando expense:", error);
-      return { success: false, error: error.message };
-    }
+  const { error } = await supabase
+    .from('expenses')
+    .insert([{
+      ...expense,
+      user_id: user.id
+    }]);
 
-    return { success: true };
-  } catch (error) {
-    console.error("Error inesperado al crear el Gasto:", error);
-    return { success: false, error: "Error inesperado" };
+  if (error) {
+    console.error('Error creating expense:', error);
+    throw error;
   }
 }
 
-export async function getExpenses(userId?: string): Promise<Expense[]> {
-
+export async function getExpenses(): Promise<Expense[]> {
   const supabase = await createSupabaseClient();
-
-  const {data: { user },} = await supabase.auth.getUser();
- 
-  
-  //console.log('user', user);
+  const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    throw new Error('User no autenticado');
+    throw new Error('User not authenticated');
   }
+
   const { data, error } = await supabase
     .from('expenses')
     .select('*')
     .eq('user_id', user.id)
-    
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
   return data || [];

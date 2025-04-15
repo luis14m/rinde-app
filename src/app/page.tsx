@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -7,9 +8,11 @@ export default function Home() {
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between h-20">
         <div className="flex items-center space-x-6">
-            <img 
+        <Image
               src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png" 
               alt="KLV Ingeniería y Construcción" 
+              width={64}    // Add this
+              height={64}   // Add this
               className="h-16 w-auto"
             />
             <div className="h-12 w-px bg-gray-200" />

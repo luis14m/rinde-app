@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import {ListFilter, PlusCircle } from "lucide-react";
+
+import {ListFilter, PlusCircle, User2 } from 'lucide-react';
 import { Button } from "./ui/button";
 import { signOutAction } from "@/app/actions";
 import { createSupabaseClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
+import { User } from '@supabase/supabase-js';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -17,29 +17,47 @@ import {
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let subscription: { unsubscribe: () => void } | null = null;
+
     const initAuth = async () => {
-      const supabase = await createSupabaseClient();
+      try {
+        const supabase = await createSupabaseClient();
 
-      // Get initial user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+        // Get initial user
+        const { data: { user: initialUser } } = await supabase.auth.getUser();
+        setUser(initialUser);
 
-      // Listen for auth changes
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-      });
-
-      return () => subscription.unsubscribe();
+        // Setup auth state listener
+        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+          (_event, session) => {
+            setUser(session?.user ?? null);
+          }
+        );
+        
+        subscription = sub;
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initAuth();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
+
+  if (isLoading) {
+    return null; // O un componente de loading
+  }
 
   return (
     <nav className="bg-white shadow-md">
@@ -49,7 +67,7 @@ export default function Navbar() {
             <NavigationMenuList>
               {/* Logo y Título */}
               <NavigationMenuItem>
-                <Link href="http://www.klv.cl" legacyBehavior passHref>
+                
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     <img
                       src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
@@ -57,47 +75,53 @@ export default function Navbar() {
                       className="h-16 w-auto"
                     />
                   </NavigationMenuLink>
-                </Link>
+             
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/" legacyBehavior passHref>
+                
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <h1 className="text-2xl font-bold text-gray-900">RindeApp</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Rinde-App</h1>
                   </NavigationMenuLink>
-                </Link>
+            
               </NavigationMenuItem>
 
               {/* Navigation Links + Auth Section */}
               {user && (
                 <>
                   <NavigationMenuItem>
-                    <Link href="/rendiciones" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <NavigationMenuLink
+                      href="/rendiciones"
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      <span className="flex items-center">
                         <ListFilter className="w-4 h-4 mr-2" />
                         Ver Transacciones
-                      </NavigationMenuLink>
-                    </Link>
+                      </span>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                    <Link href="/nuevo" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <NavigationMenuLink
+                      href="/nuevo"
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      <span className="flex items-center">
                         <PlusCircle className="w-4 h-4 mr-2" />
                         Crear Rendicion
-                      </NavigationMenuLink>
-                    </Link>
+                      </span>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
 
-                 
-
                   <NavigationMenuItem>
-                    <Link href="/cuenta" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        <span className="text-sm">
-                          Hola, {user.email}!
-                        </span>
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink
+                      href="/cuenta"
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      <span className="flex items-center">
+                        <User2 className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Hola, {user.email}!</span>
+                      </span>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
