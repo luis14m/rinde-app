@@ -3,7 +3,7 @@
 import { ListFilter, PlusCircle, User2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { signOutAction } from "@/app/actions";
-import { User } from "@supabase/supabase-js";
+
 
 import {
   NavigationMenu,

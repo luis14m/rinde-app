@@ -1,7 +1,7 @@
-## Descripcion de la App
+## Descripcion de la Aplicacion
 
-Pequeña aplicacion con autenticacion para el ingreso de rendiciondes de gastos,
-con su respectivo respaldo.
+Pequeña App con autenticacion para el ingreso de rendiciondes de gastos,
+con su respectivo documento de respaldo.
 
 ##
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).

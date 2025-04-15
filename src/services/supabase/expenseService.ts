@@ -3,12 +3,12 @@ import { createSupabaseClient } from "@/utils/supabase/server";
 import { Expense, ExpenseCreate } from '../../types/supabase/expense';
 import { uploadDocuments } from './storageService/uploadDocuments';
 import { downloadDocument } from './storageService/downloadDocument';
-import { redirect } from "next/navigation";
+
 
 interface CreateExpenseResponse {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: Expense;
 }
 
 export async function createExpense(expense: ExpenseCreate): Promise<CreateExpenseResponse> {

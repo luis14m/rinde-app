@@ -64,10 +64,6 @@ const formSchema = z.object({
     .min(1, { message: "Debes subir al menos un documento" }),
 });
 
-interface ApiResponse {
-  success: boolean;
-  error?: string;
-}
 
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
