@@ -18,8 +18,8 @@ export default async function Signup(props: {
   }
 
   return (
-<main className="container mx-auto flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-<div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+    <main className="container mx-auto flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <img
           src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
           alt="KLV Ingeniería y Construcción"
