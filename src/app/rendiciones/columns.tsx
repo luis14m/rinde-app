@@ -11,30 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-
 import { useState } from "react";
-import { ExpenseEdit} from "@/components/ExpenseEdit";
+import { ExpenseEdit } from "@/components/ExpenseEdit";
 
 import { updateExpense, deleteExpense } from "@/services/supabase/expenseService";
 import { Expense, FileMetadata } from "@/types/supabase/expense";
 
-const handleDelete = async (id: string) => {
-  if (!window.confirm("¿Estás seguro de eliminar?"))
-    return;
-
-  try {
-    await deleteExpense(id);
-    window.location.reload();
-  } catch (error) {
-    console.error("Error al eliminar el gasto:", error);
-    alert("Hubo un error al eliminar el gasto");
-  }
-  
-};
-
-export const columns: ColumnDef<Expense>[] = [
+const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [
   {
-    id: "nombre", 
+    id: "nombre",
     accessorKey: "nombre",
     header: "Nombre",
   },
@@ -78,7 +63,6 @@ export const columns: ColumnDef<Expense>[] = [
     accessorKey: "fecha",
     header: "Fecha",
   },
-  
   {
     id: "documentos",
     accessorKey: "documentos",
@@ -86,7 +70,7 @@ export const columns: ColumnDef<Expense>[] = [
     cell: ({ row }) => {
       const documentos = row.getValue("documentos") as FileMetadata[];
       function handleOpen(url: string): void {
-        window.open(url,'noopener,noreferrer');
+        window.open(url, 'noopener,noreferrer');
       }
 
       return (
@@ -112,17 +96,30 @@ export const columns: ColumnDef<Expense>[] = [
       const expense = row.original;
       const [isDialogOpen, setIsDialogOpen] = useState(false);
       const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  
+
       const handleEdit = (expense: Expense) => {
         setSelectedExpense(expense);
-        setIsDialogOpen(true); // Abrir el diálogo
+        setIsDialogOpen(true);
       };
-  
+
       const handleClose = () => {
-        setIsDialogOpen(false); // Cerrar el diálogo
-        setSelectedExpense(null); // Limpiar el gasto seleccionado
+        setIsDialogOpen(false);
+        setSelectedExpense(null);
       };
-  
+
+      const handleDelete = async (id: string) => {
+        if (!window.confirm("¿Estás seguro de eliminar?"))
+          return;
+
+        try {
+          await deleteExpense(id);
+          onDataChange(); // Trigger table refresh
+        } catch (error) {
+          console.error("Error al eliminar el gasto:", error);
+          alert("Hubo un error al eliminar el gasto");
+        }
+      };
+
       return (
         <>
           <DropdownMenu>
@@ -144,16 +141,16 @@ export const columns: ColumnDef<Expense>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-  
+
           {selectedExpense && (
             <ExpenseEdit
               expense={selectedExpense}
-              onClose={handleClose} // Pasar la función de cierre
+              onClose={handleClose}
               onSave={async (updatedExpense) => {
                 try {
                   await updateExpense(updatedExpense.id, updatedExpense);
-                  handleClose(); // Cerrar el diálogo después de guardar
-                  window.location.reload(); // Recargar la página para reflejar los cambios
+                  handleClose();
+                  onDataChange(); // Replace window.location.reload() with onDataChange
                 } catch (error) {
                   console.error("Error al actualizar:", error);
                   alert("Error al actualizar la rendición");
@@ -166,3 +163,5 @@ export const columns: ColumnDef<Expense>[] = [
     },
   }
 ];
+
+export { createColumns };

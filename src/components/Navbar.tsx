@@ -1,12 +1,10 @@
 "use client";
 
-
-import {ListFilter, PlusCircle, User2 } from 'lucide-react';
+import { ListFilter, PlusCircle, User2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { signOutAction } from "@/app/actions";
-import { createSupabaseClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
-import { User } from '@supabase/supabase-js';
+import { User } from "@supabase/supabase-js";
+
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -14,79 +12,38 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import Image from "next/image";
+
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let subscription: { unsubscribe: () => void } | null = null;
-
-    const initAuth = async () => {
-      try {
-        const supabase = await createSupabaseClient();
-
-        // Get initial user
-        const { data: { user: initialUser } } = await supabase.auth.getUser();
-        setUser(initialUser);
-
-        // Setup auth state listener
-        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
-          (_event, session) => {
-            setUser(session?.user ?? null);
-          }
-        );
-        
-        subscription = sub;
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initAuth();
-
-    // Cleanup subscription on unmount
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, []);
-
-  if (isLoading) {
-    return null; // O un componente de loading
-  }
+ 
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md fixed top-0 w-full z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <NavigationMenu>
             <NavigationMenuList>
-              {/* Logo y Título */}
               <NavigationMenuItem>
-                
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <img
-                      src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
-                      alt="KLV Ingeniería y Construcción"
-                      className="h-16 w-auto"
-                    />
-                  </NavigationMenuLink>
-             
+                <Image
+                  src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
+                  alt="KLV Ingeniería y Construcción"
+                  width={64}
+                  height={64}
+                  className="h-16 w-auto"
+                  priority
+                />
               </NavigationMenuItem>
               <NavigationMenuItem>
-                
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <h1 className="text-2xl font-bold text-gray-900">Rinde-App</h1>
-                  </NavigationMenuLink>
-            
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Rinde-App
+                  </h1>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Navigation Links + Auth Section */}
-              {user && (
+          
                 <>
                   <NavigationMenuItem>
                     <NavigationMenuLink
@@ -119,7 +76,9 @@ export default function Navbar() {
                     >
                       <span className="flex items-center">
                         <User2 className="w-4 h-4 mr-2" />
-                        <span className="text-sm">Hola, {user.email}!</span>
+                        <span className="text-sm">
+                          {"Cuenta"}
+                        </span>
                       </span>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
@@ -132,7 +91,7 @@ export default function Navbar() {
                     </form>
                   </NavigationMenuItem>
                 </>
-              )}
+             
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -140,3 +99,7 @@ export default function Navbar() {
     </nav>
   );
 }
+
+
+
+

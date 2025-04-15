@@ -34,7 +34,7 @@ import {
   createExpense,
   uploadDocuments,
 } from "@/services/supabase/expenseService";
-import router from "next/router";
+import { useRouter } from 'next/navigation';
 
 // Esquema de validación con Zod
 const formSchema = z.object({
@@ -72,6 +72,7 @@ interface ApiResponse {
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
+  const router = useRouter();
 
   // Inicializar react-hook-form con Zod
   const form = useForm<ExpenseFormData>({
@@ -81,6 +82,7 @@ export default function ExpenseForm() {
 
   // Función para manejar el envío del formulario
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setLoading(true);
     try {
       // Subir documentos a Supabase
       const uploadedDocuments = await uploadDocuments(data.documentos);
@@ -92,19 +94,24 @@ export default function ExpenseForm() {
         documentos: uploadedDocuments,
       };
 
-      // Enviar el gasto a la base de datos
-      const result: ApiResponse | undefined = await createExpense(expenseData);
+      // Crear expense en Supabase
+      const result = await createExpense(expenseData);
+      console.log("Resultado de createExpense:", result); // Añadir este log
 
-      if (result?.success) {
+      if (result && result.success) { // Verificar que result existe y success es true
         setMensaje("Gasto guardado con éxito ✅");
         form.reset();
-        setTimeout(() => router.push("/rendiciones"), 300);
+    
+        
+        router.push("/rendiciones");
       } else {
-        setMensaje(`Error: ${result?.error || "Error desconocido"}`);
+        const errorMessage = result?.error || "Error desconocido";
+        console.error("Error en createExpense:", errorMessage); // Añadir este log
+        setMensaje(`Error: ${errorMessage}`);
       }
     } catch (error) {
-      setMensaje("Error al guardar el gasto");
-      console.error("Error al guardar el gasto:", error);
+      console.error("Error completo:", error); // Mejorar el log de error
+      setMensaje(error instanceof Error ? error.message : "Error al guardar el gasto");
     } finally {
       setLoading(false);
     }

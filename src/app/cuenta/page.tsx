@@ -1,4 +1,5 @@
 
+import Navbar from "@/components/Navbar";
 import { createSupabaseClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -21,8 +22,13 @@ export default async function ProtectedPage() {
  */
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12">
-     
+    <div className="flex-1 w-full flex flex-col gap-12 p-8">
+          <div className="container mx-auto">
+            <br />
+            <br />
+            <br />
+            <h1 className="text-2xl font-bold"></h1>
+            <Navbar /> 
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold">Bienvenido a tu cuenta</h1>
      
@@ -31,16 +37,12 @@ export default async function ProtectedPage() {
             <InfoIcon size="16" strokeWidth={2} />
             Esta página es accesible solo para usuarios autenticados. 
           </div>
-        </div>
-
-        
-
-        
-
+        </div >
         <div className="mt-6">
           <h2 className="font-bold text-2xl mb-4"></h2>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 "use client"
-
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { useState, useCallback, useMemo } from "react";
 
 import {
   Table,
@@ -15,19 +15,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { getExpenses } from "@/services/supabase/expenseService";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+
+
+interface DataTableProps<TData> {
   data: TData[]
+  columns: (onDataChange: () => void) => ColumnDef<TData, any>[]
+  onRefresh?: () => Promise<TData[]>  // Optional refresh handler
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
+  const [tableData, setTableData] = useState<TData[]>(data);
+
+  const refreshData = useCallback(async () => {
+    const newData = await getExpenses();
+    setTableData(newData as TData[]);
+  }, []);
+
+  const tableColumns = useMemo(
+    () => columns(refreshData),
+    [refreshData, columns]
+  );
+
   const table = useReactTable({
-    data,
-    columns,
+    data: tableData,
+    columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -68,8 +81,8 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={tableColumns.length} className="h-24 text-center">
+                Sin Datos.
               </TableCell>
             </TableRow>
           )}
@@ -78,3 +91,4 @@ export function DataTable<TData, TValue>({
     </div>
   )
 }
+

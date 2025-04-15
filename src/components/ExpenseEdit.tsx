@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Expense } from "@/types/supabase/expense";
 import { useState } from "react";
 import { TIPOS_DOCUMENTO } from "@/types/supabase/expense";
-import { FileText } from "lucide-react";
+
 import {
   Select,
   SelectContent,

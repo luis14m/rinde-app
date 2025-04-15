@@ -1,9 +1,11 @@
 import { getExpenses } from "@/services/supabase/expenseService";
-import Navbar from "@/components/Navbar";
+
 import { redirect } from "next/navigation";
 import { createSupabaseClient } from "@/utils/supabase/server";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
+import { DataTable } from "@/components/data-table";
+import { Expense } from "@/types/supabase/expense"; // Make sure you have your Expense type defined
+import { createColumns } from "./columns";
+import Navbar from "@/components/Navbar";
 
 export default async function RendicionesPage() {
   const supabase = await createSupabaseClient();
@@ -20,8 +22,14 @@ export default async function RendicionesPage() {
 
     return (
       <div className="flex-1 w-full flex flex-col gap-12 p-8">
+        
         <div className="container mx-auto">
-          <DataTable data={expenses} columns={columns} />
+          <br />
+          <br />
+          <br />
+          <h1 className="text-2xl font-bold"></h1>
+          <Navbar  />
+          <DataTable<Expense> data={expenses} columns={createColumns} />
         </div>
       </div>
     );

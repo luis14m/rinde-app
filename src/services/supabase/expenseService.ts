@@ -5,27 +5,52 @@ import { uploadDocuments } from './storageService/uploadDocuments';
 import { downloadDocument } from './storageService/downloadDocument';
 import { redirect } from "next/navigation";
 
+interface CreateExpenseResponse {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
 
+export async function createExpense(expense: ExpenseCreate): Promise<CreateExpenseResponse> {
+  try {
+    const supabase = await createSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not authenticated'
+      };
+    }
 
-export async function createExpense(expense: ExpenseCreate): Promise<void> {
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert([{
+        ...expense,
+        user_id: user.id,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
 
-  const supabase = await createSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
+    if (error) {
+      console.error('Error creating expense:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
 
-  const { error } = await supabase
-    .from('expenses')
-    .insert([{
-      ...expense,
-      user_id: user.id
-    }]);
-
-  if (error) {
-    console.error('Error creating expense:', error);
-    throw error;
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    console.error('Error in createExpense:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
   }
 }
 
