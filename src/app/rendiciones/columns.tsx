@@ -132,11 +132,12 @@ const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [
               <DropdownMenuLabel>Acciones</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleEdit(expense)}>
                 <Pencil className="w-4 h-4 mr-2" />
-                
+                Editar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleDelete(expense.id)}>
                 <Trash2 className="w-4 h-4 mr-2" />
+                Eliminar
                 
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -22,6 +22,8 @@ export interface Expense {
 }
 
 
+
+
 export interface ExpenseCreate {
   nombre: string;
   rut: string;

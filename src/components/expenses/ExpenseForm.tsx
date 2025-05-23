@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { FileUploadZone } from "@/components/ui/FileUploadZone";
 import {
@@ -65,10 +65,26 @@ const formSchema = z.object({
 });
 
 
+import { getProfiles } from "@/services/supabase/profile.client";
+import { Profile } from "@/types/supabase/profile";
+
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const data = await getProfiles();
+        setProfiles(data);
+      } catch (error) {
+        console.error("Error al cargar perfiles:", error);
+      }
+    };
+    fetchProfiles();
+  }, []);
 
   // Inicializar react-hook-form con Zod
   const form = useForm<ExpenseFormData>({
@@ -128,7 +144,21 @@ export default function ExpenseForm() {
               <FormItem>
                 <FormLabel>Nombre</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nombre Apellido" {...field} />
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un nombre" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.display_name || profile.id}>
+                          {profile.display_name || profile.id}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
