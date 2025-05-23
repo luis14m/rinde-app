@@ -1,7 +1,7 @@
-import Navbar from "@/components/navbar";
-import { createSupabaseClient } from "@/utils/supabase/server";
-import { InfoIcon } from "lucide-react";
-import { redirect } from "next/navigation";
+import Navbar from '@/components/navbar'
+import { createSupabaseClient } from '@/utils/supabase/server'
+import { InfoIcon } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 export default async function ProtectedPage() {
   const supabase = await createSupabaseClient();
