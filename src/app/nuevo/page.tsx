@@ -1,7 +1,7 @@
 "use client";
 
-import ExpenseForm from "@/components/ExpenseForm";
-import Navbar from "@/components/Navbar";
+import ExpenseForm from "@/components/expenses/ExpenseForm";
+import Navbar from "@/components/navbar";
 
 export default function CreatePage() {
   

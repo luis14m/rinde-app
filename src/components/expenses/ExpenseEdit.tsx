@@ -9,17 +9,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Expense } from "@/types/supabase/expense";
 import { useState } from "react";
-import { TIPOS_DOCUMENTO } from "@/types/supabase/expense";
-
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../ui/select";
+
+import { TIPOS_DOCUMENTO } from "@/types/supabase/expense";
+import { Expense } from "@/types/supabase/expense";
+
 
 interface ExpenseEditProps {
   expense: Expense;

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
-import { ExpenseEdit } from "@/components/ExpenseEdit";
+import { ExpenseEdit } from "@/components/expenses/ExpenseEdit";
 
 import { updateExpense, deleteExpense } from "@/services/supabase/expenseService";
 import { Expense, FileMetadata } from "@/types/supabase/expense";
@@ -132,12 +132,12 @@ const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [
               <DropdownMenuLabel>Acciones</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleEdit(expense)}>
                 <Pencil className="w-4 h-4 mr-2" />
-                Editar
+                
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleDelete(expense.id)}>
                 <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar
+                
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
