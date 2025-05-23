@@ -1,5 +1,6 @@
 import { Lato } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/navbar";
 
 
 
@@ -22,8 +23,15 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={lato.variable}>
-       
-        <main>{children}</main>
+      <div className="flex flex-col min-h-screen">
+            <div className="container max-w-4xl mx-auto px-4">
+              <Navbar />
+            </div>
+            <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
+              {children}
+            </main>
+            
+          </div>
       </body>
     </html>
   );

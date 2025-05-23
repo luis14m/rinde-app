@@ -1,7 +1,6 @@
 "use client";
 
 import ExpenseForm from '@/components/expenses/ExpenseForm'
-import Navbar from '@/components/navbar'
 
 export default function CreatePage() {
   
@@ -12,7 +11,7 @@ export default function CreatePage() {
         <br />
         <br />
         <h1 className="text-2xl font-bold"></h1>
-        <Navbar />
+        
         <ExpenseForm />
       </div>
     </div>

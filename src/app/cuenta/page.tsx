@@ -1,4 +1,3 @@
-import Navbar from '@/components/navbar'
 import { createSupabaseClient } from '@/utils/supabase/server'
 import { InfoIcon } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -27,7 +26,7 @@ export default async function ProtectedPage() {
         <br />
         <br />
         <h1 className="text-2xl font-bold"></h1>
-        <Navbar />
+        
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold">Bienvenido a tu cuenta</h1>
 
