@@ -21,40 +21,38 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 w-full z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo y título siempre visibles */}
-          <div className="flex items-center">
-            <Image
-              src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
-              alt="KLV Ingeniería y Construcción"
-              width={64}
-              height={64}
-              className="h-16 w-auto"
-              priority
-            />
-            <h1 className="text-2xl font-bold text-gray-900 ml-2">
-              Rinde-App
-            </h1>
-          </div>
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="w-full flex h-16 items-center justify-between">
+        <div className="mr-4 hidden md:flex items-center">
+          <Image
+            src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
+            alt="KLV Ingeniería y Construcción"
+            width={64}
+            height={64}
+            className="h-16 w-auto"
+            priority
+          />
+          <h1 className="text-2xl font-bold text-gray-900 ml-2">
+            Rinde-App
+          </h1>
+        </div>
 
-          {/* Botón de menú móvil */}
-          <button
-            className="md:hidden p-2"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+        {/* Botón de menú móvil */}
+        <button
+          className="md:hidden p-2"
+          onClick={toggleMenu}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
 
-          {/* Menú de navegación */}
-          <div className={`
-            absolute top-16 left-0 w-full bg-white md:relative md:top-0 
-            md:block ${isOpen ? 'block' : 'hidden'} md:w-auto
-            transition-all duration-300 ease-in-out
-          `}>
-            <NavigationMenu>
+        {/* Menú de navegación */}
+        <div className={`
+          absolute top-16 left-0 w-full bg-white md:static md:w-auto md:bg-transparent
+          ${isOpen ? 'block' : 'hidden'} md:block
+          transition-all duration-300 ease-in-out
+        `}>
+          <NavigationMenu>
             <NavigationMenuList className="flex flex-col md:flex-row space-y-2 md:space-y-0 p-4 md:p-0">
               <NavigationMenuItem>
                 <NavigationMenuLink
@@ -103,11 +101,10 @@ export default function Navbar() {
                 </form>
               </NavigationMenuItem>
             </NavigationMenuList>
-            </NavigationMenu>
-          </div>
+          </NavigationMenu>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
 
