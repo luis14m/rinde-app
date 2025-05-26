@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 
 import { FileUploadZone } from "@/components/ui/FileUploadZone";
 import {
+  ExpenseCreate,
   ExpenseFormData,
   initialExpenseFormData,
   TIPOS_DOCUMENTO,
@@ -35,38 +36,25 @@ import {
   uploadDocuments,
 } from "@/services/supabase/expenseService";
 import { useRouter } from 'next/navigation';
+import { getProfiles } from "@/services/supabase/profile.client";
+import { Profile } from "@/types/supabase/profile";
+
 
 // Esquema de validación con Zod
 const formSchema = z.object({
-  nombre: z.string().min(4, { message: "El nombre es requerido" }),
-  rut: z
-    .string()
-    .min(9, { message: "El RUT es requerido" })
-    .max(10, { message: "El RUT no puede tener más de 10 caracteres" }),
-
-  motivo: z.string().min(2, { message: "El motivo es requerido" }),
-
-  monto: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
-  abono: z.coerce
-    .number()
-    .min(0, { message: "El abono debe ser mayor o igual a 0" }),
-
-  rut_emisor: z.string().min(9, { message: "El RUT del emisor es requerido" }),
-  numero_documento: z
-    .string()
-    .min(1, { message: "El número de documento es requerido" }),
-  tipo_documento: z
-    .string()
-    .min(1, { message: "El tipo de documento es requerido" }),
-  fecha: z.string().min(1, { message: "La fecha es requerida" }),
-  documentos: z
-    .array(z.instanceof(File))
-    .min(1, { message: "Debes subir al menos un documento" }),
+  nombre: z.string().min(1, "El nombre es obligatorio"),
+  rut: z.string(),
+  motivo: z.string(),
+  monto: z.number(),
+  abono: z.number(),
+  rut_emisor: z.string(),
+  numero_documento: z.string(),
+  tipo_documento: z.string().min(1, "El tipo de documento es obligatorio"),
+  fecha: z.string(),
+  documentos: z.array(z.instanceof(File)),
 });
 
 
-import { getProfiles } from "@/services/supabase/profile.client";
-import { Profile } from "@/types/supabase/profile";
 
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
@@ -86,8 +74,8 @@ export default function ExpenseForm() {
     fetchProfiles();
   }, []);
 
-  // Inicializar react-hook-form con Zod
-  const form = useForm<ExpenseFormData>({
+  // Inicializar el form
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialExpenseFormData,
   });
@@ -101,8 +89,16 @@ export default function ExpenseForm() {
       console.log("Documentos subidos:", uploadedDocuments);
 
       // Crear el objeto de gasto con los documentos subidos
-      const expenseData = {
-        ...data,
+      const expenseData: ExpenseCreate = {
+        nombre: data.nombre!,
+        rut: data.rut!,
+        motivo: data.motivo!,
+        monto: data.monto!,
+        abono: data.abono!,
+        rut_emisor: data.rut_emisor!,
+        numero_documento: data.numero_documento!,
+        tipo_documento: data.tipo_documento!,
+        fecha: data.fecha!,
         documentos: uploadedDocuments,
       };
 

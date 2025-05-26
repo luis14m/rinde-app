@@ -21,9 +21,6 @@ export interface Expense {
   created_at: string;
 }
 
-
-
-
 export interface ExpenseCreate {
   nombre: string;
   rut: string;
@@ -39,14 +36,14 @@ export interface ExpenseCreate {
 
 export interface ExpenseFormData {
   nombre: string;
-  rut: string;
-  motivo: string;
+  rut?: string;
+  motivo?: string;
   monto: number;
-  abono:number;
-  rut_emisor: string;
-  numero_documento: string;
+  abono?:number;
+  rut_emisor?: string;
+  numero_documento?: string;
   tipo_documento: string;
-  fecha: string;
+  fecha?: string;
   documentos: File[];
   
 }
