@@ -35,10 +35,9 @@ import {
   createExpense,
   uploadDocuments,
 } from "@/services/supabase/expenseService";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { getProfiles } from "@/services/supabase/profile.client";
 import { Profile } from "@/types/supabase/profile";
-
 
 // Esquema de validación con Zod
 const formSchema = z.object({
@@ -53,8 +52,6 @@ const formSchema = z.object({
   fecha: z.string(),
   documentos: z.array(z.instanceof(File)),
 });
-
-
 
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
@@ -106,11 +103,11 @@ export default function ExpenseForm() {
       const result = await createExpense(expenseData);
       console.log("Resultado de createExpense:", result); // Añadir este log
 
-      if (result && result.success) { // Verificar que result existe y success es true
+      if (result && result.success) {
+        // Verificar que result existe y success es true
         setMensaje("Gasto guardado con éxito ✅");
         form.reset();
-    
-        
+
         router.push("/rendiciones");
       } else {
         const errorMessage = result?.error || "Error desconocido";
@@ -119,7 +116,9 @@ export default function ExpenseForm() {
       }
     } catch (error) {
       console.error("Error completo:", error); // Mejorar el log de error
-      setMensaje(error instanceof Error ? error.message : "Error al guardar el gasto");
+      setMensaje(
+        error instanceof Error ? error.message : "Error al guardar el gasto"
+      );
     } finally {
       setLoading(false);
     }
@@ -140,16 +139,16 @@ export default function ExpenseForm() {
               <FormItem>
                 <FormLabel>Nombre</FormLabel>
                 <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione un nombre" />
                     </SelectTrigger>
                     <SelectContent>
                       {profiles.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.display_name || profile.id}>
+                        <SelectItem
+                          key={profile.id}
+                          value={profile.display_name || profile.id}
+                        >
                           {profile.display_name || profile.id}
                         </SelectItem>
                       ))}
@@ -333,12 +332,15 @@ export default function ExpenseForm() {
           <div className="flex justify-end space-x-4">
             <Button
               type="button"
-              variant="outline"
+              
               onClick={() => router.push("/rendiciones")}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+            type="submit" 
+            variant="outline"
+            disabled={loading}>
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </div>

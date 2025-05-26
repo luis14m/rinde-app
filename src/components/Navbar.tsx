@@ -3,7 +3,7 @@
 import { ListFilter, PlusCircle, User2, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { signOutAction } from "@/app/actions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -12,13 +12,36 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import Image from "next/image";
+import Link from "next/link";
+import { createSupabaseClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  useEffect(() => {
+    let supabase: any;
+    const getUser = async () => {
+      supabase = await createSupabaseClient();
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      // Suscribirse a cambios de sesión
+      supabase.auth.onAuthStateChange((_event: string, session: any) => {
+        setUser(session?.user || null);
+        // Recargar la página si hay login/logout
+        router.refresh();
+      });
+    };
+    getUser();
+    // Limpieza opcional
+    return () => {
+      // No hay método de unsuscribe directo en supabase-js v2 para onAuthStateChange
+    };
+  }, [router]);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -94,11 +117,19 @@ export default function Navbar() {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <form action={signOutAction}>
-                  <Button type="submit" variant="outline" size="sm" className="w-full">
-                    Cerrar sesion
-                  </Button>
-                </form>
+                {user ? (
+                  <form action={signOutAction}>
+                    <Button type="submit" variant="outline" size="sm" className="w-full">
+                      Cerrar sesión
+                    </Button>
+                  </form>
+                ) : (
+                  <Link href="/login">
+                    <Button variant="outline" size="sm" className="w-full">
+                      Iniciar sesión
+                    </Button>
+                  </Link>
+                )}
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>

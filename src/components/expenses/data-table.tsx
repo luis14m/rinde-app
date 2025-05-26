@@ -5,7 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 import {
   Table,
@@ -16,8 +16,24 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getExpenses } from "@/services/supabase/expenseService";
+import { Search, User } from "lucide-react";
+import { formatMonto } from '@/utils/formatters';
+import { Expense } from '@/types/supabase/expense';
+import { toast } from 'sonner';
+import { createSupabaseClient } from "@/utils/supabase/client";
 
 
+interface EditableExpense extends Expense {
+  isEditing?: boolean;
+  editData?: Partial<Expense>;
+  newFiles?: File[];
+}
+
+interface Filters {
+  search: string;
+  dateFrom: string;
+  dateTo: string;
+}
 
 interface DataTableProps<TData> {
   data: TData[]
@@ -26,7 +42,65 @@ interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
+
+
   const [tableData, setTableData] = useState<TData[]>(data);
+  const [expenses, setExpenses] = useState<EditableExpense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<Filters>({
+    search: '',
+    dateFrom: '',
+    dateTo: ''
+  });
+  const [user, setUser] = useState<{ email: string } | null>(null);
+
+  const fetchExpenses = async () => {
+    try {
+      const data = await getExpenses();
+      setExpenses(data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      toast.error('Error al cargar los gastos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpenses();
+
+    const getUser = async () => {
+      const supabase = await createSupabaseClient();
+      const { data } = await supabase.auth.getUser();
+      if (data.user?.email) {
+        setUser({ email: data.user.email });
+      } else {
+        setUser(null);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  const filteredExpenses = expenses.filter(expense => {
+    const searchTerm = filters.search.toLowerCase();
+    const matchesSearch = !filters.search || 
+      expense.nombre.toLowerCase().includes(searchTerm) ||
+      expense.rut.toLowerCase().includes(searchTerm) ||
+      expense.motivo.toLowerCase().includes(searchTerm) ||
+      expense.rut_emisor.toLowerCase().includes(searchTerm);
+
+    const expenseDate = new Date(expense.fecha);
+    const matchesDateFrom = !filters.dateFrom || expenseDate >= new Date(filters.dateFrom);
+    const matchesDateTo = !filters.dateTo || expenseDate <= new Date(filters.dateTo);
+
+    return matchesSearch && matchesDateFrom && matchesDateTo;
+  });
+
+   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.monto, 0);
+  const totalAbono = filteredExpenses.reduce((sum, expense) => sum + (expense.abono || 0), 0);
+  const balance = totalAbono - totalAmount;
+
 
   const refreshData = useCallback(async () => {
     const newData = await getExpenses();
@@ -43,8 +117,71 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   })
-
+    
   return (
+
+    <div className="space-y-4 max-w-[95vw] mx-auto">
+      {/* User Info */}
+      <div className="flex items-center justify-end text-sm text-gray-600">
+        <User className="w-4 h-4 mr-2" />
+        <span>{user?.email}</span>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white shadow-sm rounded-lg p-4">
+          <span className="text-sm font-medium text-gray-500">Total de Gastos</span>
+          <p className="text-xl font-bold text-red-600 mt-1">{formatMonto(totalAmount)}</p>
+        </div>
+        <div className="bg-white shadow-sm rounded-lg p-4">
+          <span className="text-sm font-medium text-gray-500">Total de Abonos</span>
+          <p className="text-xl font-bold text-green-600 mt-1">{formatMonto(totalAbono)}</p>
+        </div>
+        <div className="bg-white shadow-sm rounded-lg p-4">
+          <span className="text-sm font-medium text-gray-500">Balance</span>
+          <p className={`text-xl font-bold mt-1 ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {formatMonto(balance)}
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white shadow-sm rounded-lg p-4 space-y-4">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar por nombre, RUT, motivo..."
+                value={filters.search}
+                onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div>
+              <input
+                type="date"
+                value={filters.dateFrom}
+                onChange={e => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <input
+                type="date"
+                value={filters.dateTo}
+                onChange={e => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+
     <div className="rounded-md border">
       <Table>
         <TableHeader>
@@ -89,6 +226,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
         </TableBody>
       </Table>
     </div>
-  )
+    </div>
+  );
 }
 

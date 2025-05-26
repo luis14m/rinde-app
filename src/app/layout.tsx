@@ -1,7 +1,7 @@
 import { Lato } from "next/font/google";
 import "./globals.css";
 import Navbar from '@/components/Navbar'
-  
+import { Toaster } from "@/components/ui/sonner"
 
 
 const lato = Lato({
@@ -30,7 +30,7 @@ export default function RootLayout({
             <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
               {children}
             </main>
-            
+             <Toaster />
           </div>
       </body>
     </html>
