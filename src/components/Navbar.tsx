@@ -2,7 +2,7 @@
 
 import { ListFilter, PlusCircle, User2, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { signOutAction } from "@/app/actions";
+import { signOutAction } from "@/app/(auth-pages)/actions";
 import { useState, useEffect } from "react";
 import {
   NavigationMenu,
@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/navigation-menu";
 import Image from "next/image";
 import Link from "next/link";
-import { createSupabaseClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function Navbar() {
   useEffect(() => {
     let supabase: any;
     const getUser = async () => {
-      supabase = await createSupabaseClient();
+      supabase = await createClient();
       const { data } = await supabase.auth.getUser();
       setUser(data.user);
       // Suscribirse a cambios de sesión
@@ -32,6 +33,7 @@ export default function Navbar() {
         setUser(session?.user || null);
         // Recargar la página si hay login/logout
         router.refresh();
+        
       });
     };
     getUser();

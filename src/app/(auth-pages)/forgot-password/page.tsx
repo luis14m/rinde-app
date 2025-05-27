@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { forgotPasswordAction } from "@/app/actions";
+import { forgotPasswordAction } from "@/app/(auth-pages)/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";

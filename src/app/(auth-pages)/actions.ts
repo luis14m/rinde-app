@@ -1,14 +1,16 @@
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
-import { createSupabaseClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { createProfile } from "@/lib/actions/profile.client";
+import { revalidatePath } from "next/cache";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
   if (!email || !password) {
@@ -19,13 +21,15 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data:user,error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
+
+   await createProfile(user.user.id, email);
 
   if (error) {
     console.error(error.code + " " + error.message);
@@ -37,12 +41,13 @@ export const signUpAction = async (formData: FormData) => {
       "Thanks for signing up! Please check your email for a verification link.",
     );
   }
+ 
 };
 
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -52,13 +57,13 @@ export const signInAction = async (formData: FormData) => {
   if (error) {
     return encodedRedirect("error", "/login", error.message);
   }
-
+  revalidatePath("/");
   return redirect("/rendiciones");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   const origin = (await headers()).get("origin");
   const callbackUrl = formData.get("callbackUrl")?.toString();
 
@@ -82,7 +87,8 @@ export const forgotPasswordAction = async (formData: FormData) => {
   if (callbackUrl) {
     return redirect(callbackUrl);
   }
-
+// Muestra el alert (opcional)
+ 
   return encodedRedirect(
     "success",
     "/forgot-password",
@@ -91,7 +97,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
 };
 
 export const resetPasswordAction = async (formData: FormData) => {
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
 
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
@@ -107,7 +113,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (password !== confirmPassword) {
     encodedRedirect(
       "error",
-      "/protected/reset-password",
+      "/cuenta/reset-password",
       "Passwords do not match",
     );
   }
@@ -119,16 +125,16 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
       "error",
-      "/protected/reset-password",
+     "/cuenta/reset-password",
       "Password update failed",
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  encodedRedirect("success", "/cuenta/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/login");
 };

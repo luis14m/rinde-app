@@ -20,7 +20,7 @@ import { Search, User } from "lucide-react";
 import { formatMonto } from '@/utils/formatters';
 import { Expense } from '@/types/supabase/expense';
 import { toast } from 'sonner';
-import { createSupabaseClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 
 interface EditableExpense extends Expense {
@@ -70,7 +70,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
     fetchExpenses();
 
     const getUser = async () => {
-      const supabase = await createSupabaseClient();
+      const supabase = await createClient();
       const { data } = await supabase.auth.getUser();
       if (data.user?.email) {
         setUser({ email: data.user.email });

@@ -36,7 +36,7 @@ import {
   uploadDocuments,
 } from "@/services/supabase/expenseService";
 import { useRouter } from "next/navigation";
-import { getProfiles } from "@/services/supabase/profile.client";
+import { getProfiles } from "@/lib/actions/profile.client";
 import { Profile } from "@/types/supabase/profile";
 
 // Esquema de validación con Zod

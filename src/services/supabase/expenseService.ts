@@ -1,5 +1,5 @@
 "use server";
-import { createSupabaseClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import { Expense, ExpenseCreate } from '../../types/supabase/expense';
 import { uploadDocuments } from './storageService/uploadDocuments';
 import { downloadDocument } from './storageService/downloadDocument';
@@ -13,7 +13,7 @@ interface CreateExpenseResponse {
 
 export async function createExpense(expense: ExpenseCreate): Promise<CreateExpenseResponse> {
   try {
-    const supabase = await createSupabaseClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -55,7 +55,7 @@ export async function createExpense(expense: ExpenseCreate): Promise<CreateExpen
 }
 
 export async function getExpenses(): Promise<Expense[]> {
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -74,7 +74,7 @@ export async function getExpenses(): Promise<Expense[]> {
 
 export async function getExpenseById(id: string): Promise<Expense | null> {
   
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (user === null || user === undefined) {
@@ -97,7 +97,7 @@ export async function getExpenseById(id: string): Promise<Expense | null> {
 
 export async function updateExpense(id: string, expense: Partial<Expense>): Promise<void> {
   
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (user === null || user === undefined) {
@@ -118,7 +118,7 @@ export async function updateExpense(id: string, expense: Partial<Expense>): Prom
 }
 
   export async function deleteExpense(id: string): Promise<void> {  
-    const supabase = await createSupabaseClient();
+    const supabase = await createClient();
   try {
     const { error } = await supabase
       .from('expenses')

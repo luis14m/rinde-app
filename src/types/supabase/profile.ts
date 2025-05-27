@@ -5,3 +5,8 @@ export interface Profile {
     created_at: string;
     updated_at: string;
   }
+export interface ProfileUpdate {
+    username?: string | null;
+    display_name?: string | null;
+    updated_at?: string;
+  }

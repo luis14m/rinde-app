@@ -1,4 +1,4 @@
-import { createSupabaseClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function downloadDocument(publicUrl: string): Promise<boolean> {
   try {
@@ -15,7 +15,7 @@ export async function downloadDocument(publicUrl: string): Promise<boolean> {
     const filePath = pathSegments.slice(bucketIndex + 1).join('/');
 
     
-    const supabase = await createSupabaseClient();
+    const supabase = await createClient();
     
     // Get the file data
     const { data, error } = await supabase.storage

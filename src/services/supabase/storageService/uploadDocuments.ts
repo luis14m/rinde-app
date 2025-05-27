@@ -1,8 +1,8 @@
 import { FileMetadata } from '@/types/supabase/expense';
-import { createSupabaseClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 
 export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
-  const supabase = await createSupabaseClient();
+  const supabase = await createClient();
 
    const { data: { user } } = await supabase.auth.getUser();
     
