@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { updateProfile } from "@/actions/profile.server";
+import { updateProfile } from "@/app/actions/profile.server";
 import { createClient } from "@/utils/supabase/client";
-import { getProfileById } from "@/actions/profile.client";
+import { getProfileById } from "@/app/actions/profile.client";
 
 const formSchema = z.object({
   username: z.string().min(5).max(50),

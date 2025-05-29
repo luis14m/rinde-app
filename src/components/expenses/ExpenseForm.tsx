@@ -34,9 +34,9 @@ import {
 import {
   createExpense,
   uploadDocuments,
-} from "@/actions/expense.server";
+} from "@/app/actions/expense.server";
 import { useRouter } from "next/navigation";
-import { getProfiles } from "@/actions/profile.client";
+import { getProfiles } from "@/app/actions/profile.client";
 import { Profile } from "@/types/supabase/profile";
 
 // Esquema de validación con Zod

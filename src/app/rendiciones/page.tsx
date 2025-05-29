@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { DataTable } from "@/components/expenses/data-table";
 import { Expense } from "@/types/supabase/expense"; // Make sure you have your Expense type defined
 import { createColumns } from "./columns";
-import { getExpenses } from "@/actions/expense.server";
+import { getExpenses } from "@/app/actions/expense.server";
 
 export default async function RendicionesPage() {
   const supabase = await createClient();

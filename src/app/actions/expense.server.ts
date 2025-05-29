@@ -1,6 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { Expense, ExpenseCreate } from '../types/supabase/expense';
+import { Expense, ExpenseCreate } from '../../types/supabase/expense';
 import { uploadDocuments } from './upload.server';
 import { downloadDocument } from './download.server';
 

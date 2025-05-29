@@ -15,12 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getExpenses } from "@/actions/expense.server";
+import { getExpenses } from '@/app/actions/expense.server';
 import { Search, User } from "lucide-react";
 import { formatMonto } from '@/utils/formatters';
 import { Expense } from '@/types/supabase/expense';
 import { toast } from 'sonner';
 import { createClient } from "@/utils/supabase/client";
+import * as XLSX from 'xlsx';
 
 
 interface EditableExpense extends Expense {
@@ -183,7 +184,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
 
 
     <div className="rounded-md border">
-      <Table>
+      <Table id={'Table'}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -225,8 +226,25 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
           )}
         </TableBody>
       </Table>
-    </div>
-    </div>
+     
+      </div>
+       <div className="p-4 flex justify-end">
+        <button
+          onClick={exportToExcel}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Exportar a Excel
+        </button>
+      </div>
+    </div>      
+    
   );
 }
 
+function exportToExcel() {
+    
+    const table = document.getElementById('Table');
+    const worksheet: XLSX.WorkSheet = XLSX.utils.table_to_sheet(table);
+    const workbook: XLSX.WorkBook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
+    XLSX.writeFile(workbook, 'rendiciones.xlsx');
+  }
