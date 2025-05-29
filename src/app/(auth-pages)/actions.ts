@@ -4,7 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createProfile } from "@/lib/actions/profile.client";
+import { createProfile } from "@/actions/profile.client";
 import { revalidatePath } from "next/cache";
 
 export const signUpAction = async (formData: FormData) => {

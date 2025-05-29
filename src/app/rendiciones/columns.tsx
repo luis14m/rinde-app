@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { ExpenseEdit } from "@/components/expenses/ExpenseEdit";
 
-import { updateExpense, deleteExpense } from "@/services/supabase/expenseService";
+import { updateExpense, deleteExpense } from "@/actions/expense.server";
 import { Expense, FileMetadata } from "@/types/supabase/expense";
 
 const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [

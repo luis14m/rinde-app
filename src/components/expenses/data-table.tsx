@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getExpenses } from "@/services/supabase/expenseService";
+import { getExpenses } from "@/actions/expense.server";
 import { Search, User } from "lucide-react";
 import { formatMonto } from '@/utils/formatters';
 import { Expense } from '@/types/supabase/expense';

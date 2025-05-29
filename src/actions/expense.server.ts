@@ -1,8 +1,8 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { Expense, ExpenseCreate } from '../../types/supabase/expense';
-import { uploadDocuments } from './storageService/uploadDocuments';
-import { downloadDocument } from './storageService/downloadDocument';
+import { Expense, ExpenseCreate } from '../types/supabase/expense';
+import { uploadDocuments } from './upload.server';
+import { downloadDocument } from './download.server';
 
 
 interface CreateExpenseResponse {
