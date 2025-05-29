@@ -22,7 +22,9 @@ export default async function RendicionesPage() {
     return (
       <div className="flex-1 w-full flex flex-col gap-12 p-8">
         <div className="container mx-auto">
-          <DataTable<Expense> data={expenses} columns={createColumns} />
+          <DataTable<Expense> 
+          data={expenses} 
+          columns={createColumns} />
         </div>
       </div>
     );
