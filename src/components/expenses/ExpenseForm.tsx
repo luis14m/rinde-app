@@ -38,6 +38,8 @@ import {
 import { useRouter } from "next/navigation";
 import { getProfiles } from "@/app/actions/profile.client";
 import { Profile } from "@/types/supabase/profile";
+import { Label } from "@radix-ui/react-label";
+import { getUserAndProfile } from "@/app/actions/profile.client";
 
 // Esquema de validación con Zod
 const formSchema = z.object({
@@ -57,18 +59,32 @@ export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [userProfile, setUserProfile] = useState<{ user: any; profile: Profile | null }>({ user: null, profile: null });
   const router = useRouter();
 
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const data = await getProfiles();
+        const data = await  getProfiles();
         setProfiles(data);
       } catch (error) {
         console.error("Error al cargar perfiles:", error);
       }
     };
     fetchProfiles();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserAndProfile = async () => {
+      try {
+        // Suponiendo que getUserAndProfile retorna { user, profile }
+        const { user, profile } = await getUserAndProfile();
+        setUserProfile({ user, profile });
+      } catch (error) {
+        console.error("Error al cargar usuario y perfil:", error);
+      }
+    };
+    fetchUserAndProfile();
   }, []);
 
   // Inicializar el form
@@ -139,21 +155,11 @@ export default function ExpenseForm() {
               <FormItem>
                 <FormLabel>Nombre</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione un nombre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.map((profile) => (
-                        <SelectItem
-                          key={profile.id}
-                          value={profile.display_name || profile.id}
-                        >
-                          {profile.display_name || profile.id}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    {...field}
+                    value={userProfile.profile?.display_name ?? ""}
+                    className="text-sm text-gray-500"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

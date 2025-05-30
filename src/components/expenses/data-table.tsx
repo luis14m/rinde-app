@@ -241,10 +241,12 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
   );
 }
 
+
+
 function exportToExcel() {
     
     const table = document.getElementById('Table');
     const worksheet: XLSX.WorkSheet = XLSX.utils.table_to_sheet(table);
     const workbook: XLSX.WorkBook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    XLSX.writeFile(workbook, 'rendiciones.xlsx');
+    XLSX.writeFile(workbook, 'tabla.xlsx');
   }

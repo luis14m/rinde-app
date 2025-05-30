@@ -17,7 +17,7 @@ import { ExpenseEdit } from "@/components/expenses/ExpenseEdit";
 import { updateExpense, deleteExpense } from "@/app/actions/expense.server";
 import { Expense, FileMetadata } from "@/types/supabase/expense";
 
-const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [
+export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
   {
     id: "nombre",
     accessorKey: "nombre",
@@ -165,4 +165,3 @@ const createColumns = (onDataChange: () => void): ColumnDef<Expense>[] => [
   }
 ];
 
-export { createColumns };

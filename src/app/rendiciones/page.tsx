@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { DataTable } from "@/components/expenses/data-table";
 import { Expense } from "@/types/supabase/expense"; // Make sure you have your Expense type defined
-import { createColumns } from "./columns";
+import { columns } from "./columns";
 import { getExpenses } from "@/app/actions/expense.server";
 
 export default async function RendicionesPage() {
@@ -24,7 +24,7 @@ export default async function RendicionesPage() {
         <div className="container mx-auto">
           <DataTable<Expense> 
           data={expenses} 
-          columns={createColumns} />
+          columns={columns} />
         </div>
       </div>
     );
