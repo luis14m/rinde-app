@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getExpenses } from '@/app/actions/expense.server';
+import { exportExpensesToExcel, getExpenses } from '@/app/actions/expense.server';
 import { Search, User } from "lucide-react";
 import { formatMonto } from '@/utils/formatters';
 import { Expense } from '@/types/supabase/expense';
@@ -228,25 +228,10 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
       </Table>
      
       </div>
-       <div className="p-4 flex justify-end">
-        <button
-          onClick={exportToExcel}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Exportar a Excel
-        </button>
-      </div>
+     
     </div>      
     
   );
 }
 
 
-
-function exportToExcel() {
-    
-    const table = document.getElementById('Table');
-    const worksheet: XLSX.WorkSheet = XLSX.utils.table_to_sheet(table);
-    const workbook: XLSX.WorkBook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    XLSX.writeFile(workbook, 'tabla.xlsx');
-  }
