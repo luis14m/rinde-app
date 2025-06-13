@@ -1,36 +1,47 @@
-import { Lato } from "next/font/google";
 import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
+import { Footer } from "@/components/footer";
+import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
-const lato = Lato({
-  variable: "--font-geist-sans",
-  weight: ["400", "700"],
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "Rinde App",
-  description: "Aplicacion de Rendicion de Gastos",
+export const metadata: Metadata = {
+  title: "Blog KLV",
+  description: "App in Next.js and Supabase",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={lato.variable}>
-        <div className="flex flex-col max-h-screen">
-          <div className="px-4">
-            <Navbar />
+      <body
+        className={cn(
+          inter.className,
+          
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex flex-col max-h-screen">
+            <div className="px-4">
+              <Navbar />
+            </div>
+            <main className="flex-1 px-4 py-8">{children}</main>
           </div>
-          <main className="flex-1 px-4 py-8">
-            {children}
-          </main>
           <Toaster />
-        </div>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

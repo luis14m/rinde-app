@@ -50,41 +50,56 @@ export async function exportExpensesToExcel() {
 
 // ...existing code...
 
-export async function downloadDocumentsAsZip(publicUrls: string[]): Promise<Buffer | null> {
+export async function downloadDocumentsAsZip(): Promise<Buffer | null> {
+  // 1. Conexión a Supabase
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+
   const archive = archiver("zip", { zlib: { level: 9 } });
   const buffers: Buffer[] = [];
-
-  // Stream para recolectar los datos del ZIP
   const writable = new Writable({
     write(chunk, _encoding, callback) {
       buffers.push(chunk as Buffer);
       callback();
     }
   });
-
   archive.pipe(writable);
 
-  for (const publicUrl of publicUrls) {
-    try {
-      const url = new URL(publicUrl);
-      const pathSegments = url.pathname.split('/');
-      const bucketIndex = pathSegments.indexOf('expense-documents');
-      if (bucketIndex === -1) continue;
-      const filePath = pathSegments.slice(bucketIndex + 1).join('/');
-      const { data, error } = await supabase.storage.from('expense-documents').download(filePath);
-      if (error || !data) continue;
-      const originalName = decodeURIComponent(pathSegments[pathSegments.length - 1]);
-      const arrayBuffer = await data.arrayBuffer();
-      archive.append(Buffer.from(arrayBuffer), { name: originalName });
-    } catch (e) {
-      continue;
+  // 2. Obtener documentos de la tabla expenses
+  const { data: expenses, error } = await supabase
+    .from("expenses")
+    .select("documentos")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+
+  // 3. Recorrer cada expense y extraer archivos del campo documentos
+  for (const expense of expenses ?? []) {
+    // documentos puede ser un array de objetos o URLs, ajusta según tu estructura
+    const docs = Array.isArray(expense.documentos) ? expense.documentos : [];
+    for (const doc of docs) {
+      // Si doc es un objeto con url y nombre, ajusta aquí
+      const publicUrl = typeof doc === "string" ? doc : doc.url;
+      const originalName = typeof doc === "string" ? publicUrl.split("/").pop()! : doc.nombre || doc.name || "document";
+      try {
+        const url = new URL(publicUrl);
+        const pathSegments = url.pathname.split('/');
+        const bucketIndex = pathSegments.indexOf('expense-documents');
+        if (bucketIndex === -1) continue;
+        const filePath = pathSegments.slice(bucketIndex + 1).join('/');
+        const { data, error } = await supabase.storage.from('expense-documents').download(filePath);
+        if (error || !data) continue;
+        const arrayBuffer = await data.arrayBuffer();
+        archive.append(Buffer.from(arrayBuffer), { name: originalName });
+      } catch (e) {
+        continue;
+      }
     }
   }
 
   await archive.finalize();
 
-  // Espera a que el stream termine
   await new Promise<void>((resolve, reject) => {
     writable.on("finish", () => resolve());
     writable.on("error", (err) => reject(err));

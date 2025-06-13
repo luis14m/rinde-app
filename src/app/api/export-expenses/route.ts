@@ -85,7 +85,7 @@ try {
       return NextResponse.json({ error: "No URLs provided or invalid URLs" }, { status: 400 });
     }
 
-    const zipBuffer = await downloadDocumentsAsZip(urls);
+    const zipBuffer = await downloadDocumentsAsZip();
 
     if (!zipBuffer) {
       return NextResponse.json({ error: "No se pudo generar el ZIP" }, { status: 500 });

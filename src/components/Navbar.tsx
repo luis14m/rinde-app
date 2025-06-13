@@ -2,7 +2,6 @@
 
 import { ListFilter, PlusCircle, User2, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { signOutAction } from "@/app/(auth-pages)/actions";
 import { useState, useEffect } from "react";
 import {
   NavigationMenu,
@@ -15,9 +14,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { LogoutButton } from "./logout-button";
+import { ModeToggle } from "./ui/mode-toggle";
 
-
-export default function Navbar() {
+export default async function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
@@ -33,7 +33,6 @@ export default function Navbar() {
         setUser(session?.user || null);
         // Recargar la página si hay login/logout
         router.refresh();
-        
       });
     };
     getUser();
@@ -57,9 +56,7 @@ export default function Navbar() {
             className="h-16 w-auto"
             priority
           />
-          <h1 className="text-2xl font-bold text-gray-900 ml-2">
-            Rinde-App
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 ml-2">Rinde-App</h1>
         </div>
 
         {/* Botón de menú móvil */}
@@ -72,75 +69,73 @@ export default function Navbar() {
         </button>
 
         {/* Menú de navegación */}
-        <div className={`
+        <div
+          className={`
           absolute top-16 left-0 w-full bg-white md:static md:w-auto md:bg-transparent
-          ${isOpen ? 'block' : 'hidden'} md:block
+          ${isOpen ? "block" : "hidden"} md:block
           transition-all duration-300 ease-in-out
-        `}>
+        `}
+        >
           <NavigationMenu>
             <NavigationMenuList className="flex flex-col md:flex-row space-y-2 md:space-y-0 p-4 md:p-0">
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="/rendiciones"
-                  className={navigationMenuTriggerStyle()}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <span className="flex items-center">
-                    <ListFilter className="w-4 h-4 mr-2" />
-                    Ver Transacciones
-                  </span>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="/nuevo"
-                  className={navigationMenuTriggerStyle()}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <span className="flex items-center">
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Crear Rendicion
-                  </span>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="/cuenta"
-                  className={navigationMenuTriggerStyle()}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <span className="flex items-center">
-                    <User2 className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Cuenta</span>
-                  </span>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                {user ? (
-                  <form action={signOutAction}>
-                    <Button type="submit" variant="outline" size="sm" className="w-full">
-                      Cerrar sesión
-                    </Button>
-                  </form>
-                ) : (
-                  <Link href="/login">
+              {user ? (
+                <>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      href="/rendiciones"
+                      className={navigationMenuTriggerStyle()}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className="flex items-center">
+                        <ListFilter className="w-4 h-4 mr-2" />
+                        Ver Transacciones
+                      </span>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      href="/nuevo"
+                      className={navigationMenuTriggerStyle()}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className="flex items-center">
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Nueva Transaccion
+                      </span>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      href="/cuenta"
+                      className={navigationMenuTriggerStyle()}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className="flex items-center">
+                        <User2 className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Cuenta</span>
+                      </span>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <LogoutButton />
+                  </NavigationMenuItem>
+                 
+                </>
+              ) : (
+                <NavigationMenuItem>
+                  <Link href="/auth/login">
                     <Button variant="outline" size="sm" className="w-full">
                       Iniciar sesión
                     </Button>
                   </Link>
-                )}
-              </NavigationMenuItem>
+                </NavigationMenuItem>
+              )}
             </NavigationMenuList>
+            <ModeToggle />
           </NavigationMenu>
+       
         </div>
       </div>
     </header>
   );
 }
-
-
-
-

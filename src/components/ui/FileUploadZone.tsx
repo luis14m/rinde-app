@@ -55,7 +55,7 @@ export function FileUploadZone({  files, onFilesAdd, onFileRemove, accept, error
               Arrastra y suelta archivos aquí o <span className="text-blue-500">haz clic para seleccionar</span>
               <br />
               <span className="text-xs text-gray-500">
-                PDF, Word, Excel o imágenes (Nombre de archivo sin espacios y máx. 50MB por archivo)
+                PDF, Word, Excel o imágenes (Nombre de archivo sin espacios y máx. 10MB por archivo)
                
               </span>
             </>

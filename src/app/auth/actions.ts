@@ -1,65 +1,78 @@
-"use server";
+'use server'
 
-import { encodedRedirect } from "@/utils/utils";
-import { createClient } from "@/utils/supabase/server";
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+import { createProfile } from '@/app/actions/profile.client'
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { createProfile } from "@/app/actions/profile.client";
-import { revalidatePath } from "next/cache";
+import { encodedRedirect } from "@/utils/utils";
 
-export const signUpAction = async (formData: FormData) => {
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+export async function login(formData: FormData) {
+  const supabase = await createClient()
 
-  if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Email and password are required",
-    );
+  // Obtener la URL de origen si existe
+  const redirectTo = formData.get('redirectTo') as string || '/blog'
+
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
   }
 
-  const { data:user,error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-    },
-  });
-
-   await createProfile(user.user.id, email);
+  const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
+    throw error
   }
- 
-};
 
-export const signInAction = async (formData: FormData) => {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const supabase = await createClient();
+  // Revalidar rutas específicas
+  revalidatePath('/', 'layout')
+  revalidatePath('/', 'page')
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  revalidatePath('/rendiciones')
+
+  redirect(redirectTo)
+  
+}
+
+export async function signup(formData: FormData) {
+  const supabase = await createClient()
+
+  const redirectTo = formData.get('redirectTo') as string || '/'
+
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+  }
+
+  const { data: authData, error } = await supabase.auth.signUp(data)
 
   if (error) {
-    return encodedRedirect("error", "/login", error.message);
+    throw error
   }
-  revalidatePath("/login");
-  return redirect("/rendiciones");
-};
+
+  if (authData.user) {
+    try {
+      await createProfile(authData.user.id, authData.user.email!)
+    } catch (error) {
+      console.error('Error creating profile:', error)
+    }
+  }
+
+  // Revalidar rutas específicas
+  revalidatePath('/', 'layout')
+  revalidatePath('/', 'page')
+  revalidatePath('/blog')
+  revalidatePath('/dashboard')
+  revalidatePath('/profile')
+  
+  redirect('/profile')
+}
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return redirect('/auth/login');
+}
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -131,10 +144,4 @@ export const resetPasswordAction = async (formData: FormData) => {
   }
 
   encodedRedirect("success", "/cuenta/reset-password", "Password updated");
-};
-
-export const signOutAction = async () => {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  return redirect("/login");
 };

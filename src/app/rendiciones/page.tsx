@@ -29,7 +29,7 @@ export default async function RendicionesPage() {
             columns={columns} />
 
             <DownloadExcelButton />
-            <DownloadZipButton />
+        
         </div>
 
       </div>
