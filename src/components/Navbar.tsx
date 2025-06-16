@@ -16,8 +16,9 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { LogoutButton } from "./logout-button";
 import { ModeToggle } from "./ui/mode-toggle";
+import Logo from "./logo-imagen";
 
-export default async function Navbar() {
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
@@ -48,14 +49,7 @@ export default async function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <div className="flex h-16 items-center justify-between">
         <div className="mr-4 hidden md:flex items-center">
-          <Image
-            src="https://tlvuxyxktqqzvynbhhtu.supabase.co/storage/v1/object/public/NukleoPublico/UsoPublicoGeneral/Logo.png"
-            alt="KLV Ingeniería y Construcción"
-            width={64}
-            height={64}
-            className="h-16 w-auto"
-            priority
-          />
+          <Logo/>
           <h1 className="text-2xl font-bold text-gray-900 ml-2">Rinde-App</h1>
         </div>
 

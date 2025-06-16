@@ -9,10 +9,10 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ width = 100, height = 100, className }) => (
   <Image
-    src="../public/logo.svg"
+    src="/logo.svg"
     height={64}
     width={64}
-    className="h-16 w-auto"
+    className="dark:invert"
     alt="Logo"
     priority
   />
