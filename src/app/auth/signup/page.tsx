@@ -55,6 +55,9 @@ export default function SignUpPage() {
       const formData = new FormData();
       formData.append('email', values.email);
       formData.append('password', values.password);
+      formData.append('confirmPassword', values.confirmPassword);
+
+  
       
       await signup(formData);
       console.log("¡Cuenta creada con éxito!");
@@ -150,6 +153,7 @@ export default function SignUpPage() {
                 type="submit" 
                 className="w-full mt-6" 
                 disabled={isLoading}
+                variant="outline"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Crear cuenta

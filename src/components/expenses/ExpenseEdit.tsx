@@ -18,8 +18,7 @@ import {
   SelectValue,
 } from "../ui/select";
 
-import { TIPOS_DOCUMENTO } from "@/types/supabase/expense";
-import { Expense } from "@/types/supabase/expense";
+import { Expense , TIPOS_DOCUMENTO } from "@/types/supabase";
 
 
 interface ExpenseEditProps {
@@ -71,7 +70,7 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
               <Label>RUT</Label>
               <Input
                 name="rut"
-                value={editedExpense.rut}
+                value={editedExpense.rut_emisor}
                 onChange={handleChange}
               />
             </div>

@@ -1,69 +1,82 @@
-'use client'
+"use client";
 
-import { cn } from '@/lib/utils'
-import { createClient } from '@/utils/supabase/client'
-import { Button } from '@/components/ui/button'
+import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Link from 'next/link'
-import { useState } from 'react'
-import { forgotPasswordAction } from '@/app/auth/actions'
-import { SubmitButton } from '@/components/submit-button'
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useState } from "react";
+import { forgotPasswordAction } from "@/app/auth/actions";
+import { SubmitButton } from "@/components/submit-button";
 
-export default function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+export default function ForgotPasswordForm({
+  className,
+  searchParams,
+  ...props
+}: React.ComponentPropsWithoutRef<"div"> & { searchParams?: any }) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
 
     try {
       // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
-      })
-      if (error) throw error
-      setSuccess(true)
+      });
+      if (error) throw error;
+      setSuccess(true);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div
+      className={cn(
+        "container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12",
+        className
+      )}
+      {...props}
+    >
       {success ? (
-        <Card>
+        <Card className="w-full max-w-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-2xl">Revisa tu correo</CardTitle>
+            <CardDescription>
+              Instrucciones para restablecer la contraseña enviadas
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive a password reset
-              email.
+              Si te registraste usando tu correo y contraseña, recibirás un
+              email para restablecer tu contraseña.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="w-full max-w-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+            <CardTitle className="text-2xl">Resetablecer tu Password</CardTitle>
             <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your password
+              Escribe tu correo electrónico y te enviaremos un enlace para
+              restablecer tu contraseña.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -81,13 +94,16 @@ export default function ForgotPasswordForm({ className, ...props }: React.Compon
                   />
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                 <SubmitButton formAction={forgotPasswordAction}>
-                              Restablecer contraseña
-                            </SubmitButton>
+                <SubmitButton formAction={forgotPasswordAction}>
+                  Restablecer contraseña
+                </SubmitButton>
               </div>
               <div className="mt-4 text-center text-sm">
-                Ya tienes una cuenta?{' '}
-                <Link href="/auth/login" className="underline underline-offset-4">
+                Ya tienes una cuenta?{" "}
+                <Link
+                  href="/auth/login"
+                  className="underline underline-offset-4"
+                >
                   Iniciar sesion
                 </Link>
               </div>
@@ -96,5 +112,5 @@ export default function ForgotPasswordForm({ className, ...props }: React.Compon
         </Card>
       )}
     </div>
-  )
+  );
 }

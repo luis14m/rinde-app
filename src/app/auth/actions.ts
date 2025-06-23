@@ -3,14 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import { createProfile } from '@/app/actions/profile.client'
+import { createProfile } from '@/app/profile/actions'
 import { headers } from "next/headers";
 import { encodedRedirect } from "@/utils/utils";
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
-   // type-casting here for convenience
+  // type-casting here for convenience
   // in practice, you should validate your inputs
   const data = {
     email: formData.get('email') as string,
@@ -25,41 +25,43 @@ export async function login(formData: FormData) {
 
   // Revalidar rutas específicas
   revalidatePath('/', 'layout')
- 
-  redirect('/rendiciones')
   
+
+  redirect('/rendiciones')
+
 }
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  const redirectTo = formData.get('redirectTo') as string || '/'
 
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
 
-  const { data: authData, error } = await supabase.auth.signUp(data)
-
-  if (error) {
-    throw error
-  }
-
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+   
+  })
+  
   if (authData.user) {
     try {
-      await createProfile(authData.user.id, authData.user.email!)
+      await createProfile(authData.user.id, authData.user.email)
     } catch (error) {
       console.error('Error creating profile:', error)
     }
   }
+   if (error) throw error
+  
 
   // Revalidar rutas específicas
   revalidatePath('/', 'layout')
-  revalidatePath('/', 'page')
   revalidatePath('/rendiciones')
-  
   redirect('/profile')
+
+
 }
 
 export async function signOut() {
@@ -94,8 +96,8 @@ export const forgotPasswordAction = async (formData: FormData) => {
   if (callbackUrl) {
     return redirect(callbackUrl);
   }
-// Muestra el alert (opcional)
- 
+  // Muestra el alert (opcional)
+
   return encodedRedirect(
     "success",
     "/forgot-password",
@@ -132,7 +134,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
       "error",
-     "/cuenta/reset-password",
+      "/cuenta/reset-password",
       "Password update failed",
     );
   }

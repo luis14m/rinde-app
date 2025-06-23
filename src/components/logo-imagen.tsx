@@ -7,14 +7,22 @@ interface LogoProps {
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ width = 100, height = 100, className }) => (
+const Logo: React.FC<LogoProps> = ({
+  width = 100,
+  height = 100,
+  className,
+}) => (
   <Image
     src="/logo.svg"
-    height={64}
-    width={64}
-    className="dark:invert"
+    height={height}
+    width={width}
     alt="Logo"
     priority
+    className={className}
+    style={{
+      width: width ? `${width}px` : "auto",
+      height: height ? `${height}px` : "auto",
+    }}
   />
 );
 

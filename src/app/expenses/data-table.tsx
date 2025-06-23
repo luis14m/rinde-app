@@ -2,10 +2,14 @@
 import {
   ColumnDef,
   flexRender,
-  getCoreRowModel,
   useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel
+ 
+
 } from "@tanstack/react-table";
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { Button } from "@/components/ui/button"
 
 import {
   Table,
@@ -16,15 +20,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  exportExpensesToExcel,
+
   getExpenses,
-} from "@/app/actions/expense.server";
+} from "@/app/expenses/actions";
 import { Search, User } from "lucide-react";
 import { formatMonto } from "@/utils/formatters";
 import { Expense } from "@/types/supabase/expense";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
-import * as XLSX from "xlsx";
+
+import DownloadExcelButton from "@/components/expenses/DownloadExcelButton";
 
 interface EditableExpense extends Expense {
   isEditing?: boolean;
@@ -37,15 +42,17 @@ interface Filters {
   dateFrom: string;
   dateTo: string;
 }
-
-interface DataTableProps<TData> {
+interface DataTableProps<TData, TValue> {
+  columns: (refreshData: () => void) => ColumnDef<TData, TValue>[];
   data: TData[];
-  columns: (onDataChange: () => void) => ColumnDef<TData, any>[];
-  onRefresh?: () => Promise<TData[]>; // Optional refresh handler
 }
 
-export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
-  const [tableData, setTableData] = useState<TData[]>(data);
+
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+}: DataTableProps<TData, TValue>) {
+  //const [tableData, setTableData] = useState<TData[]>(data);
   const [expenses, setExpenses] = useState<EditableExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>({
@@ -88,7 +95,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
     const matchesSearch =
       !filters.search ||
       expense.nombre.toLowerCase().includes(searchTerm) ||
-      expense.rut.toLowerCase().includes(searchTerm) ||
+      expense.rut_rendidor.toLowerCase().includes(searchTerm) ||
       expense.motivo.toLowerCase().includes(searchTerm) ||
       expense.rut_emisor.toLowerCase().includes(searchTerm);
 
@@ -111,20 +118,23 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
   );
   const balance = totalAbono - totalAmount;
 
+ 
+
+  // Update refreshData to update expenses
   const refreshData = useCallback(async () => {
     const newData = await getExpenses();
-    setTableData(newData as TData[]);
+    setExpenses(newData);
   }, []);
+// ...existing code...
 
-  const tableColumns = useMemo(
-    () => columns(refreshData),
-    [refreshData, columns]
-  );
+const tableColumns = columns(refreshData);
 
+  // Use filteredExpenses as the data for the table
   const table = useReactTable({
-    data: tableData,
+    data: filteredExpenses as TData[],
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -165,6 +175,9 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
         </div>
       </div>
 
+            
+
+
       {/* Filters */}
       <div className="bg-white shadow-sm rounded-lg p-4 space-y-4">
         <div className="flex flex-wrap gap-4">
@@ -182,6 +195,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             </div>
           </div>
+         <DownloadExcelButton expenses={filteredExpenses} />
           <div className="flex gap-4">
             <div>
               <input
@@ -207,55 +221,75 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table id={"Table"}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      <div>
+        <div className="rounded-md border">
+          <Table id={"Table"}>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={tableColumns.length}
-                  className="h-24 text-center"
-                >
-                  Sin Datos.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={tableColumns.length}
+                    className="h-24 text-center"
+                  >
+                    Sin Datos.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

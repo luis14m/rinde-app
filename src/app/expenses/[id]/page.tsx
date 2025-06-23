@@ -1,12 +1,10 @@
 // Import necessary modules and components
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { DataTable } from "@/components/expenses/data-table";
-import { Expense } from "@/types/supabase/expense"; // Make sure you have your Expense type defined
-import { columns } from "./columns";
-import { getExpenses } from "@/app/actions/expense.server";
-import DownloadExcelButton from "@/components/expenses/DownloadExcelButton";
-import DownloadZipButton from "@/components/expenses/DownloadZipButton";
+import { DataTable } from "@/app/expenses/data-table";
+import { columns } from "../columns";
+import { getExpenses } from "@/app/expenses/actions";
+
 
 export default async function RendicionesPage() {
   const supabase = await createClient();
@@ -15,7 +13,7 @@ export default async function RendicionesPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   try {
@@ -24,11 +22,10 @@ export default async function RendicionesPage() {
     return (
      <div className="flex-1 w-full flex flex-col gap-12 p-8">
         <div className="container mx-auto">
-          <DataTable<Expense>
+          <DataTable
             data={expenses}
             columns={columns} />
 
-            <DownloadExcelButton />
         
         </div>
 

@@ -30,21 +30,19 @@ import {
   initialExpenseFormData,
   TIPOS_DOCUMENTO,
   TYPES_MIME,
-} from "@/types/supabase/expense";
+} from "@/types/supabase";
 import {
   createExpense,
   uploadDocuments,
-} from "@/app/actions/expense.server";
+} from "@/app/expenses/actions";
 import { useRouter } from "next/navigation";
-import { getProfiles } from "@/app/actions/profile.client";
-import { Profile } from "@/types/supabase/profile";
-import { Label } from "@radix-ui/react-label";
-import { getUserAndProfile } from "@/app/actions/profile.client";
+
+
 
 // Esquema de validación con Zod
 const formSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
-  rut: z.string(),
+  rut_rendidor: z.string(),
   motivo: z.string(),
   monto: z.number(),
   abono: z.number(),
@@ -58,34 +56,22 @@ const formSchema = z.object({
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  // const [profiles, setProfiles] = useState<Profile[]>([]); // Eliminado fetchProfiles
   const [userProfile, setUserProfile] = useState<{ user: any; profile: Profile | null }>({ user: null, profile: null });
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const data = await  getProfiles();
-        setProfiles(data);
-      } catch (error) {
-        console.error("Error al cargar perfiles:", error);
-      }
-    };
-    fetchProfiles();
-  }, []);
+  // useEffect(() => {
+  //   const fetchProfiles = async () => {
+  //     try {
+  //       const data = await  getProfiles();
+  //       setProfiles(data);
+  //     } catch (error) {
+  //       console.error("Error al cargar perfiles:", error);
+  //     }
+  //   };
+  //   fetchProfiles();
+  // }, []);
 
-  useEffect(() => {
-    const fetchUserAndProfile = async () => {
-      try {
-        // Suponiendo que getUserAndProfile retorna { user, profile }
-        const { user, profile } = await getUserAndProfile();
-        setUserProfile({ user, profile });
-      } catch (error) {
-        console.error("Error al cargar usuario y perfil:", error);
-      }
-    };
-    fetchUserAndProfile();
-  }, []);
 
   // Inicializar el form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -104,7 +90,7 @@ export default function ExpenseForm() {
       // Crear el objeto de gasto con los documentos subidos
       const expenseData: ExpenseCreate = {
         nombre: data.nombre!,
-        rut: data.rut!,
+        rut_rendidor: data.rut_rendidor!,
         motivo: data.motivo!,
         monto: data.monto!,
         abono: data.abono!,
@@ -156,8 +142,8 @@ export default function ExpenseForm() {
                 <FormLabel>Nombre</FormLabel>
                 <FormControl>
                   <Input
-                    {...field}
-                    value={userProfile.profile?.display_name ?? ""}
+                   
+                    placeholder="Nombre del Rendidor"  {...field}
                     className="text-sm text-gray-500"
                   />
                 </FormControl>
@@ -169,7 +155,7 @@ export default function ExpenseForm() {
           {/* Campo RUT */}
           <FormField
             control={form.control}
-            name="rut"
+            name="rut_rendidor"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>RUT</FormLabel>
