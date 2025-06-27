@@ -96,7 +96,7 @@ export default function ExpenseForm() {
         setMensaje("Gasto guardado con éxito ✅");
         form.reset();
 
-        router.push("/rendiciones");
+        router.push("/");
       } else {
         const errorMessage = result?.error || "Error desconocido";
         console.error("Error en createExpense:", errorMessage); // Añadir este log

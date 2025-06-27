@@ -1,3 +1,4 @@
+"use server";
 import React, { use } from "react";
 import { getExpenseById, downloadDocument, updateStateOfExpense, getCurrentUserProfile } from "../../actions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -6,15 +7,27 @@ import { ArrowUpRight, Download, Info, SquarePen, ArrowLeft } from "lucide-react
 import type { FileMetadata } from "@/types/expenses";
 import Link from "next/link";
 
-interface PageProps {
-params: Promise<{
-id: string;
-}>;
+// Server actions for form submissions
+export async function approveExpense(formData: FormData) {
+  "use server";
+  const id = formData.get("expenseId") as string;
+  await updateStateOfExpense(id, "Aprobado");
+}
+export async function rejectExpense(formData: FormData) {
+  "use server";
+  const id = formData.get("expenseId") as string;
+  await updateStateOfExpense(id, "Rechazado");
+}
+export async function revertExpense(formData: FormData) {
+  "use server";
+  const id = formData.get("expenseId") as string;
+  await updateStateOfExpense(id, "Pendiente");
 }
 
-export default async function DetailsPage(props: PageProps) {
-const params = use(props.params);
-const expense = await getExpenseById(params.id);
+export default async function DetailsPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { id } = await params;
+  const expense = await getExpenseById(id);
   if (!expense) return;
 
   // Obtener perfil del usuario
@@ -49,17 +62,20 @@ const expense = await getExpenseById(params.id);
       {/* Botones de aprobación/rechazo */}
       <div className="flex gap-2 mb-6">
         {puedeAprobar && (
-          <form action={async () => { await updateStateOfExpense(expense.id, "Aprobado"); }}>
+          <form action={approveExpense}>
+            <input type="hidden" name="expenseId" value={expense.id} />
             <Button type="submit" variant="default">Aprobar</Button>
           </form>
         )}
         {puedeAprobar && (
-          <form action={async () => { await updateStateOfExpense(expense.id, "Rechazado"); }}>
+          <form action={rejectExpense}>
+            <input type="hidden" name="expenseId" value={expense.id} />
             <Button type="submit" variant="destructive">Rechazar</Button>
           </form>
         )}
         {puedeRevertir && (
-          <form action={async () => { await updateStateOfExpense(expense.id, "Pendiente"); }}>
+          <form action={revertExpense}>
+            <input type="hidden" name="expenseId" value={expense.id} />
             <Button type="submit" variant="outline">Revertir a Pendiente</Button>
           </form>
         )}
