@@ -21,31 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-import { FileUploadZone } from "@/components/ui/FileUploadZone";
+import { FileUploadZone } from "@/components/ui/file-upload-zone";
 import {
   ExpenseCreate,
-  ExpenseFormData,
   initialExpenseFormData,
-  TIPOS_DOCUMENTO,
+  tipo_documento,
   TYPES_MIME,
-} from "@/types/supabase";
-import {
-  createExpense,
-  uploadDocuments,
-} from "@/app/expenses/actions";
+} from "@/types/expenses";
+import { createExpense, uploadDocuments } from "@/app/expenses/actions";
 import { useRouter } from "next/navigation";
-
-
 
 // Esquema de validación con Zod
 const formSchema = z.object({
-  nombre: z.string().min(1, "El nombre es obligatorio"),
+  nombre_rendidor: z.string().min(1, "El nombre rendidor es obligatorio"),
   rut_rendidor: z.string(),
   motivo: z.string(),
-  monto: z.number(),
+  gasto: z.number(),
   abono: z.number(),
+  nombre_emisor: z.string().min(1, "El nombre emisor es obligatorio"),
   rut_emisor: z.string(),
   numero_documento: z.string(),
   tipo_documento: z.string().min(1, "El tipo de documento es obligatorio"),
@@ -56,22 +51,7 @@ const formSchema = z.object({
 export default function ExpenseForm() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
-  // const [profiles, setProfiles] = useState<Profile[]>([]); // Eliminado fetchProfiles
-  const [userProfile, setUserProfile] = useState<{ user: any; profile: Profile | null }>({ user: null, profile: null });
   const router = useRouter();
-
-  // useEffect(() => {
-  //   const fetchProfiles = async () => {
-  //     try {
-  //       const data = await  getProfiles();
-  //       setProfiles(data);
-  //     } catch (error) {
-  //       console.error("Error al cargar perfiles:", error);
-  //     }
-  //   };
-  //   fetchProfiles();
-  // }, []);
-
 
   // Inicializar el form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -87,18 +67,24 @@ export default function ExpenseForm() {
       const uploadedDocuments = await uploadDocuments(data.documentos);
       console.log("Documentos subidos:", uploadedDocuments);
 
+      // Convertir FileMetadata[] a objetos planos
+      const plainDocuments = uploadedDocuments.map((doc) => ({
+        ...doc,
+      }));
+
       // Crear el objeto de gasto con los documentos subidos
       const expenseData: ExpenseCreate = {
-        nombre: data.nombre!,
+        nombre_rendidor: data.nombre_rendidor!,
         rut_rendidor: data.rut_rendidor!,
         motivo: data.motivo!,
-        monto: data.monto!,
+        gasto: data.gasto!,
         abono: data.abono!,
+        nombre_emisor: data.rut_emisor!, // Asumiendo que rut_emisor es el nombre del emisor
         rut_emisor: data.rut_emisor!,
         numero_documento: data.numero_documento!,
         tipo_documento: data.tipo_documento!,
         fecha: data.fecha!,
-        documentos: uploadedDocuments,
+        documentos: plainDocuments, // Usar los objetos planos aquí
       };
 
       // Crear expense en Supabase
@@ -128,24 +114,20 @@ export default function ExpenseForm() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-black mb-8 text-center">
+      <h1 className="text-2xl font-bold text-black  text-center">
         Registro de Gastos
       </h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Campo Nombre */}
           <FormField
-            control={form.control as Control<ExpenseFormData>}
-            name="nombre"
+            control={form.control}
+            name="nombre_rendidor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre</FormLabel>
+                <FormLabel>Nombre Rendidor</FormLabel>
                 <FormControl>
-                  <Input
-                   
-                    placeholder="Nombre del Rendidor"  {...field}
-                    className="text-sm text-gray-500"
-                  />
+                  <Input placeholder="Nombre del Rendidor" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -182,18 +164,18 @@ export default function ExpenseForm() {
             )}
           />
 
-          {/* Campos Monto y Abono en la misma línea */}
+          {/* Campos Gasto y Abono en la misma línea */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="monto"
+              name="gasto"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto</FormLabel>
+                  <FormLabel>Gasto"</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Monto"
+                      placeholder="Gasto"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
@@ -222,7 +204,20 @@ export default function ExpenseForm() {
               )}
             />
           </div>
-
+          {/* Campo nombre Emisor */}
+          <FormField
+            control={form.control}
+            name="nombre_emisor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombre Emisor</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nombre o Razon social" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {/* Campo RUT Emisor */}
           <FormField
             control={form.control}
@@ -266,7 +261,7 @@ export default function ExpenseForm() {
                       <SelectValue placeholder="Seleccione un tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {TIPOS_DOCUMENTO.map((tipo) => (
+                      {tipo_documento.map((tipo) => (
                         <SelectItem key={tipo} value={tipo}>
                           {tipo}
                         </SelectItem>
@@ -322,17 +317,10 @@ export default function ExpenseForm() {
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              
-              onClick={() => router.push("/rendiciones")}
-            >
+            <Button type="button" onClick={() => router.push("/")}>
               Cancelar
             </Button>
-            <Button 
-            type="submit" 
-            variant="outline"
-            disabled={loading}>
+            <Button type="submit" variant="outline" disabled={loading}>
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </div>

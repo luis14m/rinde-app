@@ -27,7 +27,7 @@ export async function login(formData: FormData) {
   revalidatePath('/', 'layout')
   
 
-  redirect('/rendiciones')
+  redirect('/')
 
 }
 
@@ -58,7 +58,6 @@ export async function signup(formData: FormData) {
 
   // Revalidar rutas específicas
   revalidatePath('/', 'layout')
-  revalidatePath('/rendiciones')
   redirect('/profile')
 
 
@@ -139,5 +138,5 @@ export const resetPasswordAction = async (formData: FormData) => {
     );
   }
 
-  encodedRedirect("success", "/cuenta/reset-password", "Password updated");
+  encodedRedirect("success", "/profile", "Password updated");
 };

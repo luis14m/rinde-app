@@ -1,6 +1,15 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Archive,
+  Eye,
+  SquarePen,
+  Clock,
+  CircleCheckBig,
+  CircleX,
+  ArrowUpRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,81 +22,34 @@ import {
 
 import { useState } from "react";
 import { ExpenseEdit } from "@/components/expenses/ExpenseEdit";
+import { useRouter } from "next/navigation";
 
-import { updateExpense, deleteExpense } from "@/app/expenses/actions";
-import { Expense, FileMetadata } from "@/types/supabase/expense";
+import { updateExpense, storeExpense } from "@/app/expenses/actions";
+import { Expense, FileMetadata } from "@/types/expenses";
+import { formatMonto } from "@/utils/formatters";
 
-// New component for Acciones cell
-function AccionesCell({ expense, onDataChange }: { expense: Expense; onDataChange: () => void }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-
-  const handleEdit = (expense: Expense) => {
-    setSelectedExpense(expense);
-    setIsDialogOpen(true);
-  };
-
-  const handleClose = () => {
-    setIsDialogOpen(false);
-    setSelectedExpense(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de eliminar?")) return;
-    try {
-      await deleteExpense(id);
-      onDataChange();
-    } catch (error) {
-      console.error("Error al eliminar el gasto:", error);
-      alert("Hubo un error al eliminar el gasto");
-    }
-  };
-
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => handleEdit(expense)}>
-            <Pencil className="w-4 h-4 mr-2" />
-            Editar
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => handleDelete(expense.id)}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            Eliminar
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {selectedExpense && (
-        <ExpenseEdit
-          expense={selectedExpense}
-          onClose={handleClose}
-          onSave={async (updatedExpense) => {
-            try {
-              await updateExpense(updatedExpense.id, updatedExpense);
-              handleClose();
-              onDataChange();
-            } catch (error) {
-              console.error("Error al actualizar:", error);
-              alert("Error al actualizar la rendición");
-            }
-          }}
-        />
-      )}
-    </>
-  );
-}
-
-export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
+export const columns: ColumnDef<Expense>[] = [
   {
-    id: "nombre",
-    accessorKey: "nombre",
+    id: "fecha",
+    accessorKey: "fecha",
+    header: "Fecha",
+    cell: ({ row }) => {
+      const fechaRaw = row.getValue("fecha");
+      function formatFecha(fecha: string) {
+        if (!fecha) return "";
+        const d = new Date(fecha);
+        if (isNaN(d.getTime())) return fecha;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+      }
+      return formatFecha(fechaRaw as string);
+    },
+  },
+  {
+    id: "nombre_rendidor",
+    accessorKey: "nombre_rendidor",
     header: "Nombre",
   },
   {
@@ -105,31 +67,44 @@ export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
     accessorKey: "motivo",
     header: "Motivo",
   },
-  {
-    id: "monto",
-    accessorKey: "monto",
-    header: "Monto",
-  },
-  {
-    id: "abono",
-    accessorKey: "abono",
-    header: "Abono",
-  },
-  
+
   {
     id: "numero_documento",
     accessorKey: "numero_documento",
     header: "N° Documento",
   },
+
   {
-    id: "tipo_documento",
-    accessorKey: "tipo_documento",
-    header: "Tipo Documento",
+    id: "gasto",
+    accessorKey: "gasto",
+    header: "Gasto",
+    cell: ({ row }) => {
+      const gasto = parseFloat(row.getValue("gasto"));
+      const formatted = formatMonto(gasto);
+      return formatted;
+    },
   },
   {
-    id: "fecha",
-    accessorKey: "fecha",
-    header: "Fecha",
+    id: "abono",
+    accessorKey: "abono",
+    header: "Abono",
+    cell: ({ row }) => {
+      const abono = parseFloat(row.getValue("abono"));
+      const formatted = formatMonto(abono);
+      return formatted;
+    },
+  },
+
+  {
+    id: "balance",
+    header: "Balance",
+    cell: ({ row }) => {
+      const abono = Number(row.getValue("abono")) || 0;
+      const gasto = Number(row.getValue("gasto")) || 0;
+      const balance = abono - gasto;
+      const formatted = formatMonto(balance);
+      return formatted;
+    },
   },
   {
     id: "documentos",
@@ -138,7 +113,7 @@ export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
     cell: ({ row }) => {
       const documentos = row.getValue("documentos") as FileMetadata[];
       function handleOpen(url: string): void {
-        window.open(url, 'noopener,noreferrer');
+        window.open(url, "noopener,noreferrer");
       }
 
       return (
@@ -156,16 +131,35 @@ export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
         </div>
       );
     },
-  },
+  }, 
   {
     id: "estado",
     accessorKey: "estado",
     header: "Estado",
     cell: ({ row }) => {
       const estado = row.getValue("estado") as string;
+      let icon = null;
+      if (estado === "Pendiente") {
+        icon = <Clock className="inline w-4 h-4 mr-1 align-middle" />;
+      } else if (estado === "Aprobado") {
+        icon = <CircleCheckBig className="inline w-4 h-4 mr-1 align-middle" />;
+      } else if (estado === "Rechazado") {
+        icon = <CircleX className="inline w-4 h-4 mr-1 align-middle" />;
+      }
       return (
-        <span className={`px-2 py-1 rounded ${estado === "Pendiente" ? "bg-yellow-200 text-yellow-800" : "bg-green-200 text-green-800"}`}>
-          {estado}
+        <span
+          className={`inline-flex items-center gap-1 rounded max-w-max px-2 py-1 ${
+            estado === "Pendiente"
+              ? "bg-yellow-200 text-yellow-800"
+              : estado === "Aprobado"
+              ? "bg-green-200 text-green-800"
+              : estado === "Rechazado"
+              ? "bg-red-200 text-red-800"
+              : ""
+          }`}
+        >
+          {icon}
+          <span className="truncate">{estado}</span>
         </span>
       );
     },
@@ -175,8 +169,65 @@ export const columns = (onDataChange: () => void): ColumnDef<Expense>[] => [
     header: "Acciones",
     cell: ({ row }) => {
       const expense = row.original;
-      return <AccionesCell expense={expense} onDataChange={onDataChange} />;
-    },
-  }
-];
+      const router = useRouter();
+      const [openEdit, setOpenEdit] = useState(false);
+      const [editData, setEditData] = useState<Expense | null>(null);
 
+      // Ir a detalles
+      function handleDetail(id: string) {
+        router.push(`/expenses/${id}`);
+      }
+
+      // Abrir Shet de edición
+      function handleEdit(id: string) {
+        setEditData(expense);
+        setOpenEdit(true);
+      }
+
+      // Archivar gasto
+      async function handleArchivar(id: string) {
+        await storeExpense(id);
+        router.refresh();
+      }
+
+      return (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleDetail(expense.id)}>
+                <Eye className="w-4 h-4 mr-2" />
+                Detalles
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleEdit(expense.id)}>
+                <SquarePen className="w-4 h-4 mr-2" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleArchivar(expense.id)}>
+                <Archive className="w-4 h-4 mr-2" />
+                Archivar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {openEdit && editData && (
+            <ExpenseEdit
+              expense={editData}
+              onClose={() => setOpenEdit(false)}
+              onSave={async (updated) => {
+                await updateExpense(expense.id, updated);
+                setOpenEdit(false);
+                router.refresh();
+              }}
+            />
+          )}
+        </>
+      );
+    },
+  },
+];

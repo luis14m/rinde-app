@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +40,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // 👈 Nuevo estado
   const router = useRouter();
 
   const form = useForm<FormValues>({
@@ -139,11 +140,23 @@ export default function LoginPage() {
                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="••••••••"
-                          type="password"
-                          className="pl-10"
+                          type={showPassword ? "text" : "password"} // 👈 Cambia el tipo
+                          className="pl-10 pr-10"
                           disabled={isLoading}
                           {...field}
                         />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          className="absolute right-2 top-2.5 p-1 rounded hover:bg-muted"
+                          onClick={() => setShowPassword((v) => !v)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage />

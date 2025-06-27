@@ -26,7 +26,7 @@ export default async function ProfilePage() {
   const profileData = await getProfileById(user.id);
 
   if (!profileData) {
-    return <div>No profile found</div>;
+    return <div>Perfil no encontrado</div>;
   }
 
   async function updateProfileAction(formData: FormData) {
@@ -40,16 +40,16 @@ export default async function ProfilePage() {
       return;
     }
     await updateProfile(user.id, values);
-    redirect("/rendiciones");
+    redirect("/");
   }
 
   return (
-    <div className="flex justify-center mt-20">
+    <div className="flex justify-center mt-10">
       <Card className="container max-w-2xl py-8 px-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Profile</h1>
+          <h1 className="text-3xl font-bold">Perfil</h1>
           <p className="text-muted-foreground">
-            Update your profile information
+           Actualiza tu perfil.
           </p>
         </div>
         <form action={updateProfileAction} className="space-y-4 mt-8">

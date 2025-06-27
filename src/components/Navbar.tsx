@@ -39,7 +39,7 @@ export default async function Navbar() {
                 <>
                   <NavigationMenuItem>
                     <NavigationMenuLink
-                      href="/rendiciones"
+                      href="/"
                       className={navigationMenuTriggerStyle()}
                     >
                       <span className="flex items-center">
@@ -50,12 +50,12 @@ export default async function Navbar() {
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <NavigationMenuLink
-                      href="/nuevo"
+                      href="/expenses/create"
                       className={navigationMenuTriggerStyle()}
                     >
                       <span className="flex items-center">
                         <PlusCircle className="w-4 h-4 mr-2" />
-                        Nueva Transaccion
+                        Crear Transaccion
                       </span>
                     </NavigationMenuLink>
                   </NavigationMenuItem>

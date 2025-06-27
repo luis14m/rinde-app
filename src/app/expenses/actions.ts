@@ -1,6 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import type { Expense, ExpenseCreate, FileMetadata } from "@/types/supabase";
+import type { Expense, ExpenseCreate, FileMetadata } from "@/types/expenses";
 
 
 interface CreateExpenseResponse {
@@ -13,7 +13,7 @@ export async function createExpense(expense: ExpenseCreate): Promise<CreateExpen
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       return {
         success: false,
@@ -55,7 +55,7 @@ export async function createExpense(expense: ExpenseCreate): Promise<CreateExpen
 export async function getExpenses(): Promise<Expense[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (!user) {
     throw new Error('User not authenticated');
   }
@@ -64,6 +64,7 @@ export async function getExpenses(): Promise<Expense[]> {
     .from('expenses')
     .select('*')
     .eq('user_id', user.id)
+    .eq('archivado', false)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -71,10 +72,10 @@ export async function getExpenses(): Promise<Expense[]> {
 }
 
 export async function getExpenseById(id: string): Promise<Expense | null> {
-  
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (user === null || user === undefined) {
     throw new Error('User not authenticated');
   }
@@ -93,15 +94,15 @@ export async function getExpenseById(id: string): Promise<Expense | null> {
   }
 }
 
-export async function updateExpense(id: string, expense: Partial<Expense>): Promise<void> {
-  
+export async function updateExpense(id: string, expense: Partial<Expense>)
+  : Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (user === null || user === undefined) {
     throw new Error('User not authenticated');
   }
-  
+
   try {
     const { error } = await supabase
       .from('expenses')
@@ -110,13 +111,55 @@ export async function updateExpense(id: string, expense: Partial<Expense>): Prom
 
     if (error) throw error;
   } catch (error) {
-    console.error('Error updating expense:', error);
+    console.error('Error updating expense state:', error);
     throw error;
   }
 }
 
-  export async function deleteExpense(id: string): Promise<void> {  
-    const supabase = await createClient();
+export async function updateStateOfExpense(id: string, estadoNuevo: string)
+: Promise<void> {
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user === null || user === undefined) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const { error } = await supabase
+      .from('expenses')
+      .update({ estado: estadoNuevo })
+      .eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating expense state:', error);
+    throw error;
+  }
+}
+
+export async function storeExpense(id: string) {
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase
+      .from('expenses')
+      .update({ archivado: true })
+      .eq('id', id);
+
+    if (error) throw error;
+
+  }
+  catch (error) {
+    console.error('Error storing expense:', error);
+    throw error;
+  }
+}
+
+
+
+/* export async function deleteExpense(id: string): Promise<void> {
+  const supabase = await createClient();
   try {
     const { error } = await supabase
       .from('expenses')
@@ -127,8 +170,9 @@ export async function updateExpense(id: string, expense: Partial<Expense>): Prom
   } catch (error) {
     console.error('Error deleting expense:', error);
     throw error;
-  } 
-}
+  }
+} */
+
 
 export async function downloadDocument(publicUrl: string): Promise<boolean> {
   try {
@@ -136,7 +180,7 @@ export async function downloadDocument(publicUrl: string): Promise<boolean> {
     const url = new URL(publicUrl);
     const pathSegments = url.pathname.split('/');
     const bucketIndex = pathSegments.indexOf('expense-documents');
-    
+
     if (bucketIndex === -1) {
       throw new Error('Invalid file URL');
     }
@@ -144,9 +188,9 @@ export async function downloadDocument(publicUrl: string): Promise<boolean> {
     // Get the file path within the bucket (everything after 'expense-documents')
     const filePath = pathSegments.slice(bucketIndex + 1).join('/');
 
-    
+
     const supabase = await createClient();
-    
+
     // Get the file data
     const { data, error } = await supabase.storage
       .from('expense-documents')
@@ -171,10 +215,10 @@ export async function downloadDocument(publicUrl: string): Promise<boolean> {
     link.href = blobUrl;
     link.download = originalName;
     document.body.appendChild(link);
-    
+
     // Trigger the download
     link.click();
-    
+
     // Clean up
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
@@ -188,16 +232,14 @@ export async function downloadDocument(publicUrl: string): Promise<boolean> {
 
 export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-   const { data: { user } } = await supabase.auth.getUser();
-    
   if (!user) {
     throw new Error('User not authenticated');
   }
 
   const uploadPromises = files.map(async (file) => {
     try {
-      // Create a unique folder for each upload session using user_id
       const timestamp = Date.now();
       const filePath = `${user.id}/uploads/${timestamp}/${file.name}`;
 
@@ -213,15 +255,16 @@ export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
         throw uploadError;
       }
 
-    
       // Obtener la URL pública del archivo subido
-      //***SUBAPASE ENTREGA EL NOMBRE DE ARCHIVO CON UN 25 ANTES DEL ESPACIO  */
-
-     
-      const { data: { publicUrl } } = supabase.storage
+      const publicUrlResult = supabase.storage
         .from('expense-documents')
         .getPublicUrl(filePath);
-      console.log('url publica obtenida:', publicUrl)
+
+      const publicUrl = publicUrlResult.data?.publicUrl;
+      if (!publicUrl) {
+        throw new Error('No se pudo obtener la URL pública del archivo');
+      }
+
       // Reemplazar %2520 por %20
       const correctedUrl = publicUrl.replace(/%2520/g, '%20');
 
@@ -238,4 +281,17 @@ export async function uploadDocuments(files: File[]): Promise<FileMetadata[]> {
   });
 
   return Promise.all(uploadPromises);
+}
+
+export async function getCurrentUserProfile() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+  if (error) return null;
+  return data;
 }

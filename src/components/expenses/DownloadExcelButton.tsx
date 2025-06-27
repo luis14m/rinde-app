@@ -1,4 +1,3 @@
-// src/app/rendiciones/DownloadExcelButton.tsx
 "use client";
 import React from "react";
 import { Button } from "../ui/button";
@@ -7,13 +6,14 @@ import ExcelJS from "exceljs";
 
 interface DownloadExcelButtonProps {
   expenses: any[];
+  visibleColumns: string[]; // Nueva prop para columnas visibles
 }
 
-export default function DownloadExcelButton({ expenses }: DownloadExcelButtonProps) {
+export default function DownloadExcelButton({ expenses, visibleColumns }: DownloadExcelButtonProps) {
   const handleDownload = async () => {
-    if (!expenses || expenses.length === 0) return;
+    if (!expenses || expenses.length === 0 || !visibleColumns || visibleColumns.length === 0) return;
 
-    const columns = Object.keys(expenses[0]);
+    const columns = visibleColumns;
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Expenses");
     worksheet.addRow(columns);

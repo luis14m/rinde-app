@@ -1,15 +1,21 @@
 "use client";
+
+import * as React from "react";
 import {
   ColumnDef,
   flexRender,
   useReactTable,
   getCoreRowModel,
-  getPaginationRowModel
- 
-
+  getPaginationRowModel,
+  VisibilityState,
 } from "@tanstack/react-table";
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { Button } from "@/components/ui/button"
+import { useState, useMemo, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import {
   Table,
@@ -19,17 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-
-  getExpenses,
-} from "@/app/expenses/actions";
-import { Search, User } from "lucide-react";
+import { getExpenses } from "@/app/expenses/actions";
+import { Search, User, CheckCircle, Clock, CircleX, Filter, CircleCheckBig } from "lucide-react";
 import { formatMonto } from "@/utils/formatters";
-import { Expense } from "@/types/supabase/expense";
-import { toast } from "sonner";
+import { Expense } from "@/types/expenses";
 import { createClient } from "@/utils/supabase/client";
 
 import DownloadExcelButton from "@/components/expenses/DownloadExcelButton";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface EditableExpense extends Expense {
   isEditing?: boolean;
@@ -41,42 +46,28 @@ interface Filters {
   search: string;
   dateFrom: string;
   dateTo: string;
+  estado?: "Pendientes" | "Aprobados" | "Rechazados";
 }
 interface DataTableProps<TData, TValue> {
-  columns: (refreshData: () => void) => ColumnDef<TData, TValue>[];
+  columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Expense, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  //const [tableData, setTableData] = useState<TData[]>(data);
-  const [expenses, setExpenses] = useState<EditableExpense[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Elimina expenses y fetchExpenses, usa data directamente
   const [filters, setFilters] = useState<Filters>({
     search: "",
     dateFrom: "",
     dateTo: "",
+
   });
   const [user, setUser] = useState<{ email: string } | null>(null);
 
-  const fetchExpenses = async () => {
-    try {
-      const data = await getExpenses();
-      setExpenses(data);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-      toast.error("Error al cargar los gastos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchExpenses();
-
+    // Solo obtener usuario para mostrar email
     const getUser = async () => {
       const supabase = await createClient();
       const { data } = await supabase.auth.getUser();
@@ -86,30 +77,35 @@ export function DataTable<TData, TValue>({
         setUser(null);
       }
     };
-
     getUser();
   }, []);
 
-  const filteredExpenses = expenses.filter((expense) => {
-    const searchTerm = filters.search.toLowerCase();
-    const matchesSearch =
-      !filters.search ||
-      expense.nombre.toLowerCase().includes(searchTerm) ||
-      expense.rut_rendidor.toLowerCase().includes(searchTerm) ||
-      expense.motivo.toLowerCase().includes(searchTerm) ||
-      expense.rut_emisor.toLowerCase().includes(searchTerm);
-
-    const expenseDate = new Date(expense.fecha);
-    const matchesDateFrom =
-      !filters.dateFrom || expenseDate >= new Date(filters.dateFrom);
-    const matchesDateTo =
-      !filters.dateTo || expenseDate <= new Date(filters.dateTo);
-
-    return matchesSearch && matchesDateFrom && matchesDateTo;
-  });
+  // Filtrado sobre data recibida por props
+  const filteredExpenses = useMemo(() => {
+    return (data as EditableExpense[]).filter((expense) => {
+      const searchTerm = filters.search.toLowerCase();
+      const matchesSearch =
+        !filters.search ||
+        expense.nombre_rendidor.toLowerCase().includes(searchTerm) ||
+        expense.rut_rendidor.toLowerCase().includes(searchTerm) ||
+        expense.motivo.toLowerCase().includes(searchTerm) ||
+        expense.rut_emisor.toLowerCase().includes(searchTerm);
+      const expenseDate = new Date(expense.fecha);
+      const matchesDateFrom =
+        !filters.dateFrom || expenseDate >= new Date(filters.dateFrom);
+      const matchesDateTo =
+        !filters.dateTo || expenseDate <= new Date(filters.dateTo);
+      const matchesEstado =
+        !filters.estado ||
+        (filters.estado === "Pendientes" && expense.estado === "Pendiente") ||
+        (filters.estado === "Aprobados" && expense.estado === "Aprobado") ||
+        (filters.estado === "Rechazados" && expense.estado === "Rechazado");
+      return matchesSearch && matchesDateFrom && matchesDateTo && matchesEstado;
+    });
+  }, [data, filters]);
 
   const totalAmount = filteredExpenses.reduce(
-    (sum, expense) => sum + expense.monto,
+    (sum, expense) => sum + expense.gasto,
     0
   );
   const totalAbono = filteredExpenses.reduce(
@@ -118,23 +114,18 @@ export function DataTable<TData, TValue>({
   );
   const balance = totalAbono - totalAmount;
 
- 
-
-  // Update refreshData to update expenses
-  const refreshData = useCallback(async () => {
-    const newData = await getExpenses();
-    setExpenses(newData);
-  }, []);
-// ...existing code...
-
-const tableColumns = columns(refreshData);
-
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   // Use filteredExpenses as the data for the table
   const table = useReactTable({
     data: filteredExpenses as TData[],
-    columns: tableColumns,
+    columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      columnVisibility,
+    },
   });
 
   return (
@@ -175,15 +166,12 @@ const tableColumns = columns(refreshData);
         </div>
       </div>
 
-            
-
-
       {/* Filters */}
       <div className="bg-white shadow-sm rounded-lg p-4 space-y-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por nombre, RUT, motivo..."
                 value={filters.search}
@@ -195,7 +183,7 @@ const tableColumns = columns(refreshData);
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             </div>
           </div>
-         <DownloadExcelButton expenses={filteredExpenses} />
+
           <div className="flex gap-4">
             <div>
               <input
@@ -217,11 +205,79 @@ const tableColumns = columns(refreshData);
                 className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+
+
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columnas
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DownloadExcelButton
+            expenses={filteredExpenses}
+            visibleColumns={table.getVisibleLeafColumns().map((col) => col.id)}
+          />
+          {/* DropdownMenu filtro de estados a la derecha */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-2 flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                {filters.estado ? filters.estado : "Todos los estados"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuCheckboxItem
+                checked={!filters.estado}
+                onCheckedChange={() => setFilters((prev) => ({ ...prev, estado: undefined }))}
+              >
+                Todos los estados
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filters.estado === "Pendientes"}
+                onCheckedChange={() => setFilters((prev) => ({ ...prev, estado: "Pendientes" }))}
+              >
+                <Clock className="inline w-4 h-4 text-yellow-500 mr-2" /> Pendientes
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filters.estado === "Aprobados"}
+                onCheckedChange={() => setFilters((prev) => ({ ...prev, estado: "Aprobados" }))}
+              >
+                <CircleCheckBig className="inline w-4 h-4 text-green-500 mr-2" /> Aprobados
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filters.estado === "Rechazados"}
+                onCheckedChange={() => setFilters((prev) => ({ ...prev, estado: "Rechazados" }))}
+              >
+                <CircleX className="inline w-4 h-4 text-red-500 mr-2" /> Rechazados
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       <div>
+        <div className="h-4" />
         <div className="rounded-md border">
           <Table id={"Table"}>
             <TableHeader>
@@ -262,7 +318,7 @@ const tableColumns = columns(refreshData);
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={tableColumns.length}
+                    colSpan={table.getVisibleLeafColumns().length}
                     className="h-24 text-center"
                   >
                     Sin Datos.
@@ -272,24 +328,8 @@ const tableColumns = columns(refreshData);
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
+        <div className="h-4" />
+        <DataTablePagination table={table} />
       </div>
     </div>
   );
