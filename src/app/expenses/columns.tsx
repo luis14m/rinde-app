@@ -8,7 +8,7 @@ import {
   Clock,
   CircleCheckBig,
   CircleX,
-  ArrowUpRight,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,12 +21,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
-import { ExpenseEdit } from "@/components/expenses/ExpenseEdit";
+import { EditExpense } from "@/components/expenses/edit-expense";
 import { useRouter } from "next/navigation";
 
-import { updateExpense, storeExpense } from "@/app/expenses/actions";
+import { updateExpense, storeExpense } from "@/app/expenses/actions/server.actions";
+import { downloadDocument } from "@/app/expenses/actions/client.actions";
 import { Expense, FileMetadata } from "@/types/expenses";
 import { formatMonto } from "@/utils/formatters";
+import StateLabel from "@/components/expenses/StateLabel";
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -50,12 +52,17 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: "nombre_rendidor",
     accessorKey: "nombre_rendidor",
-    header: "Nombre",
+    header: "Rendidor",
   },
-  {
+  /* {
     id: "rut_rendidor",
     accessorKey: "rut_rendidor",
     header: "RUT Rendidor",
+  }, */
+  {
+    id: "nombre_emisor",
+    accessorKey: "nombre_emisor",
+    header: "Nombre Emisor dcto.",
   },
   {
     id: "rut_emisor",
@@ -71,7 +78,7 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: "numero_documento",
     accessorKey: "numero_documento",
-    header: "N° Documento",
+    header: "N° Doc.",
   },
 
   {
@@ -112,21 +119,24 @@ export const columns: ColumnDef<Expense>[] = [
     header: "Documentos",
     cell: ({ row }) => {
       const documentos = row.getValue("documentos") as FileMetadata[];
-      function handleOpen(url: string): void {
-        window.open(url, "noopener,noreferrer");
-      }
-
+      
       return (
         <div className="space-y-4">
           {documentos?.map((doc, index) => (
-            <button
+            <a
               key={index}
-              onClick={() => handleOpen(doc.url)}
-              className="text-blue-600 hover:text-blue-800 flex items-left"
+              //href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 flex items-center underline cursor-pointer"
+              onClick={async (e) => {
+                e.preventDefault();
+                await downloadDocument(doc.url);
+              }}
             >
-              <ArrowUpRight className="w-4 h-4 mr-1" />
+              <Download className="w-4 h-4 mr-1" />
               {doc.originalName}
-            </button>
+            </a>
           ))}
         </div>
       );
@@ -138,31 +148,9 @@ export const columns: ColumnDef<Expense>[] = [
     header: "Estado",
     cell: ({ row }) => {
       const estado = row.getValue("estado") as string;
-      let icon = null;
-      if (estado === "Pendiente") {
-        icon = <Clock className="inline w-4 h-4 mr-1 align-middle" />;
-      } else if (estado === "Aprobado") {
-        icon = <CircleCheckBig className="inline w-4 h-4 mr-1 align-middle" />;
-      } else if (estado === "Rechazado") {
-        icon = <CircleX className="inline w-4 h-4 mr-1 align-middle" />;
-      }
-      return (
-        <span
-          className={`inline-flex items-center gap-1 rounded max-w-max px-2 py-1 ${
-            estado === "Pendiente"
-              ? "bg-yellow-200 text-yellow-800"
-              : estado === "Aprobado"
-              ? "bg-green-200 text-green-800"
-              : estado === "Rechazado"
-              ? "bg-red-200 text-red-800"
-              : ""
-          }`}
-        >
-          {icon}
-          <span className="truncate">{estado}</span>
-        </span>
-      );
-    },
+      return <StateLabel estado={estado} />;
+    }
+      
   },
   {
     id: "acciones",
@@ -192,31 +180,37 @@ export const columns: ColumnDef<Expense>[] = [
 
       return (
         <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleDetail(expense.id)}>
-                <Eye className="w-4 h-4 mr-2" />
-                Detalles
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleEdit(expense.id)}>
-                <SquarePen className="w-4 h-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleArchivar(expense.id)}>
-                <Archive className="w-4 h-4 mr-2" />
-                Archivar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0"
+              title="Detalles"
+              onClick={() => handleDetail(expense.id)}
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0"
+              title="Editar"
+              onClick={() => handleEdit(expense.id)}
+            >
+              <SquarePen className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0"
+              title="Archivar"
+              onClick={() => handleArchivar(expense.id)}
+            >
+              <Archive className="w-4 h-4" />
+            </Button>
+          </div>
           {openEdit && editData && (
-            <ExpenseEdit
+            <EditExpense
               expense={editData}
               onClose={() => setOpenEdit(false)}
               onSave={async (updated) => {

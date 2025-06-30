@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Upload, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { formatFileSize } from '@/utils/formatters/fileFormatter';
+import { Label } from './label';
 
 interface FileUploadZoneProps {
   
@@ -67,6 +68,7 @@ export function FileUploadZone({  files, onFilesAdd, onFileRemove, accept, error
 
       {files.length > 0 && (
         <ul className="space-y-2">
+          <Label>Documentos agregados:</Label>
           {files.map((file, index) => (
             <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">

@@ -25,8 +25,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getExpenses } from "@/app/expenses/actions";
-import { Search, User, CheckCircle, Clock, CircleX, Filter, CircleCheckBig } from "lucide-react";
+
+import { Search, User, Clock, CircleX, Filter, CircleCheckBig } from "lucide-react";
 import { formatMonto } from "@/utils/formatters";
 import { Expense } from "@/types/expenses";
 import { createClient } from "@/utils/supabase/client";

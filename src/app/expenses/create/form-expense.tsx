@@ -30,8 +30,10 @@ import {
   tipo_documento,
   TYPES_MIME,
 } from "@/types/expenses";
-import { createExpense, uploadDocuments } from "@/app/expenses/actions";
+import { createExpense } from "@/app/expenses/actions/server.actions";
+import { uploadDocuments } from "@/app/expenses/actions/client.actions"; // Asegúrate de importar esto
 import { useRouter } from "next/navigation";
+import { Save } from "lucide-react";
 
 // Esquema de validación con Zod
 const formSchema = z.object({
@@ -48,7 +50,7 @@ const formSchema = z.object({
   documentos: z.array(z.instanceof(File)),
 });
 
-export default function ExpenseForm() {
+export default function FormExpense() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<string>("");
   const router = useRouter();
@@ -125,7 +127,7 @@ export default function ExpenseForm() {
             name="nombre_rendidor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre Rendidor</FormLabel>
+                <FormLabel>Rendidor</FormLabel>
                 <FormControl>
                   <Input placeholder="Nombre del Rendidor" {...field} />
                 </FormControl>
@@ -137,12 +139,27 @@ export default function ExpenseForm() {
           {/* Campo RUT */}
           <FormField
             control={form.control}
-            name="rut_rendidor"
+            name="rut_emisor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>RUT</FormLabel>
+                <FormLabel>Rut Emisor dcto</FormLabel>
                 <FormControl>
                   <Input placeholder="12345678-9" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+           {/* Campo nombre Emisor */}
+          <FormField
+            control={form.control}
+            name="nombre_emisor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombre Emisor dcto</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nombre o Razon social" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -204,35 +221,8 @@ export default function ExpenseForm() {
               )}
             />
           </div>
-          {/* Campo nombre Emisor */}
-          <FormField
-            control={form.control}
-            name="nombre_emisor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre Emisor</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nombre o Razon social" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Campo RUT Emisor */}
-          <FormField
-            control={form.control}
-            name="rut_emisor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>RUT Emisor</FormLabel>
-                <FormControl>
-                  <Input placeholder="12345678-9" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+         
+         
           {/* Campo Número de Documento */}
           <FormField
             control={form.control}
@@ -317,10 +307,11 @@ export default function ExpenseForm() {
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <Button type="button" onClick={() => router.push("/")}>
+            <Button type="button" variant="outline" onClick={() => router.push("/")}>
               Cancelar
             </Button>
-            <Button type="submit" variant="outline" disabled={loading}>
+            <Button type="submit"  disabled={loading}>
+              <Save />
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </div>

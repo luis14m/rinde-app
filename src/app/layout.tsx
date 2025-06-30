@@ -28,14 +28,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col max-h-screen">
+          <div className="flex flex-col min-h-screen">
             <div className="px-4">
               <Navbar />
             </div>
             <main className="flex-1 px-4 py-8">{children}</main>
+            <Footer />
           </div>
           <Toaster />
-          <Footer />
         </ThemeProvider>
       </body>
     </html>

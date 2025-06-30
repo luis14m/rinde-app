@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  
 } from "@/components/ui/sheet";
 import {
   Select,
@@ -21,23 +20,34 @@ import {
   SelectValue,
 } from "../ui/select";
 import { FileUploadZone } from "@/components/ui/file-upload-zone";
-import { uploadDocuments } from "@/app/expenses/actions"; // Asegúrate de importar esto
+import { uploadDocuments } from "@/app/expenses/actions/client.actions"; // Asegúrate de importar esto
 
-import { Expense, FileMetadata, tipo_documento, TYPES_MIME } from "@/types/expenses";
+import {
+  Expense,
+  FileMetadata,
+  tipo_documento,
+  TYPES_MIME,
+} from "@/types/expenses";
+import { Files, FileText, Save, X } from "lucide-react";
 
 interface ExpenseEditProps {
   expense: Expense;
   onClose: () => void; // Función para cerrar el sheet
+  //onFileRemove: (index: number) => void;
   onSave: (updatedExpense: Expense) => Promise<void>;
 }
 
-export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
+export function EditExpense({ expense, onClose, onSave }: ExpenseEditProps) {
   // Estado local: documentos como File[]
-  const [editedExpense, setEditedExpense] = useState<Omit<Expense, 'documentos'> & { documentos: File[] }>(
-    {
-      ...expense,
-      documentos: [], // Inicializa como array vacío
-    }
+  const [editedExpense, setEditedExpense] = useState<
+    Omit<Expense, "documentos"> & { documentos: File[] }
+  >({
+    ...expense,
+    documentos: [], // Inicializa como array vacío
+  });
+
+  const [savedDocs, setSavedDocs] = useState<FileMetadata[]>(
+    expense.documentos || []
   );
 
   // Si expense.documentos existe y es FileMetadata[], conviértelo a File[] al montar
@@ -67,10 +77,15 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
       }
 
       // 2. Prepara el gasto a guardar
+
       const expenseToSave: Expense = {
         ...editedExpense,
-        documentos: documentosMetadata,
+        documentos: [
+          ...savedDocs,
+          ...(await uploadDocuments(editedExpense.documentos)),
+        ],
       };
+
       await onSave(expenseToSave);
       onClose();
     } catch (error) {
@@ -79,45 +94,66 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
     }
   };
 
-  const documentosMetadata: FileMetadata[] = editedExpense.documentos.map((doc: File | FileMetadata) => {
-    if ('url' in doc && 'originalName' in doc && 'size' in doc && 'type' in doc) {
-      // Ya es FileMetadata
-      return doc;
+  const documentosMetadata: FileMetadata[] = editedExpense.documentos.map(
+    (doc: File | FileMetadata) => {
+      if (
+        "url" in doc &&
+        "originalName" in doc &&
+        "size" in doc &&
+        "type" in doc
+      ) {
+        // Ya es FileMetadata
+        return doc;
+      }
+      // Es un File, convertirlo a FileMetadata
+      return {
+        url: "", // Asigna la URL real después de subir el archivo
+        originalName: (doc as File).name,
+        size: (doc as File).size,
+        type: (doc as File).type,
+      };
     }
-    // Es un File, convertirlo a FileMetadata
-    return {
-      url: '', // Asigna la URL real después de subir el archivo
-      originalName: (doc as File).name,
-      size: (doc as File).size,
-      type: (doc as File).type,
-    };
-  });
+  );
 
   return (
     <Sheet open onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full md:w-1/2">
+      <SheetContent
+        side="right"
+        className="px-6 sm:max-w-xl max-w-2xl overflow-y-auto" // max-w-2xl = ancho máximo, overflow-y-auto = scroll vertical
+        //style={{ maxHeight: '100vh' }} // Asegura que el scroll funcione en toda la altura de la ventana
+      >
         <SheetHeader>
           <SheetTitle>Editar Rendición</SheetTitle>
           <SheetDescription></SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          //style={{ maxHeight: 'calc(100vh - 120px)' }} // Ajusta según el header/footer
+        >
+          <div>
+            <Label>Fecha</Label>
+            <Input
+              name="fecha"
+              type="date"
+              value={
+                editedExpense.fecha
+                  ? new Date(editedExpense.fecha).toISOString().slice(0, 10)
+                  : ""
+              }
+              onChange={handleChange}
+            />
+          </div>
           <div>
             <Label>Nombre Rendidor</Label>
             <Input
-              name="nombre"
-              value={editedExpense.nombre_rendidor }
+              name="nombre_rendidor"
+              value={editedExpense.nombre_rendidor}
               onChange={handleChange}
             />
           </div>
+
           <div>
-            <Label>RUT Rendidor</Label>
-            <Input
-              name="rut"
-              value={editedExpense.rut_emisor}
-              onChange={handleChange}
-            />
-          </div>
-           <div>
             <Label>Nombre Emisor</Label>
             <Input
               name="nombre_emisor"
@@ -126,7 +162,7 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
             />
           </div>
 
-           <div>
+          <div>
             <Label>RUT Emisor</Label>
             <Input
               name="rut_emisor"
@@ -139,6 +175,14 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
             <Input
               name="motivo"
               value={editedExpense.motivo}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label>Número de Documento</Label>
+            <Input
+              name="numero_documento"
+              value={editedExpense.numero_documento}
               onChange={handleChange}
             />
           </div>
@@ -160,15 +204,7 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
               onChange={handleChange}
             />
           </div>
-         
-          <div>
-            <Label>Número de Documento</Label>
-            <Input
-              name="numero_documento"
-              value={editedExpense.numero_documento}
-              onChange={handleChange}
-            />
-          </div>
+
           <div>
             <Label>Tipo de Documento</Label>
             <Select
@@ -192,18 +228,13 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Campo Documentos */}
           <div>
-            <Label>Fecha</Label>
-            <Input
-              name="fecha"
-              type="date"
-              value={editedExpense.fecha}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            {/* Campo Documentos */}
-            <Label>Subir Documentos</Label>
+            <div className="flex items-center mb-2">
+              <Files className="mr-2" />
+              <Label className="mb-0">Subir Documentos</Label>
+            </div>
             <FileUploadZone
               files={editedExpense.documentos}
               onFilesAdd={(files) =>
@@ -223,13 +254,48 @@ export function ExpenseEdit({ expense, onClose, onSave }: ExpenseEditProps) {
             />
           </div>
 
-          <SheetFooter className="sticky bottom-0 bg-background pt-4">
+          {/* Documentos guardados */}
+          {savedDocs && savedDocs.length > 0 && (
+            <div className="mb-2">
+              <Label className="mb-1 block">Documentos guardados:</Label>
+              {expense.documentos.map((doc, idx) => (
+                <div
+                  key={doc.url || doc.originalName + idx}
+                  className="flex items-center bg-muted rounded px-3 py-2 mb-1"
+                >
+                  <FileText className="mr-2 text-muted-foreground" />
+                  <span className="flex-1 truncate text-muted-foreground">
+                    {doc.originalName && <>{doc.originalName}</>}
+                  </span>
+                  <button
+                    type="button"
+                    className="ml-2 text-destructive hover:underline"
+                    onClick={() => {
+                      setSavedDocs((prev) => {
+                        const newFiles = [...prev];
+                        newFiles.splice(idx, 1);
+                        return newFiles;
+                      });
+                    }}
+                    aria-label="Eliminar documento"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <SheetFooter className="flex flex-row justify-end gap-4 mb-8">
             <SheetClose asChild>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
             </SheetClose>
-            <Button type="submit">Guardar</Button>
+            <Button type="submit">
+              <Save />
+              Guardar
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>
