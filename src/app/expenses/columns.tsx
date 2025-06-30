@@ -37,18 +37,18 @@ export const columns: ColumnDef<Expense>[] = [
     header: "Fecha",
     cell: ({ row }) => {
       const fechaRaw = row.getValue("fecha");
+      // No usar new Date(fecha), solo cortar el string ISO
       function formatFecha(fecha: string) {
         if (!fecha) return "";
-        const d = new Date(fecha);
-        if (isNaN(d.getTime())) return fecha;
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
+        // Espera formato: "YYYY-MM-DD..." (ISO)
+        // Tomar solo los primeros 10 caracteres
+        const [year, month, day] = fecha.slice(0, 10).split("-");
         return `${day}-${month}-${year}`;
       }
       return formatFecha(fechaRaw as string);
     },
   },
+// ...existing code...
   {
     id: "nombre_rendidor",
     accessorKey: "nombre_rendidor",
