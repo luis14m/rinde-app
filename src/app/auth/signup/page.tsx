@@ -19,26 +19,33 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, Mail, Lock, UserRound } from "lucide-react";
+import { Loader2, Mail, Lock, EyeOff, Eye } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signup } from "../actions";
 
-const formSchema = z.object({
-  email: z.string().email({ message: "Email inválido" }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
-  confirmPassword: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
-});
+const formSchema = z
+  .object({
+    email: z.string().email({ message: "Email inválido" }),
+    password: z
+      .string()
+      .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+    confirmPassword: z
+      .string()
+      .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [showPassword, setShowPassword] = useState(false); //Nuevo estado
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,23 +54,21 @@ export default function SignUpPage() {
       confirmPassword: "",
     },
   });
-  
+
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    
+
     try {
       const formData = new FormData();
-      formData.append('email', values.email);
-      formData.append('password', values.password);
-      formData.append('confirmPassword', values.confirmPassword);
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+      formData.append("confirmPassword", values.confirmPassword);
 
-  
-      
       await signup(formData);
       console.log("¡Cuenta creada con éxito!");
     } catch (error: any) {
       //console.error(error.message || "Error al crear la cuenta");
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -92,12 +97,12 @@ export default function SignUpPage() {
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="nombre@email.com" 
+                        <Input
+                          placeholder="nombre@email.com"
                           type="email"
                           autoComplete="email"
                           className="pl-10"
-                          {...field} 
+                          {...field}
                         />
                       </div>
                     </FormControl>
@@ -114,13 +119,26 @@ export default function SignUpPage() {
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="••••••••" 
-                          type="password"
+                        <Input
+                          placeholder="••••••••"
+                          type={showPassword ? "text" : "password"}
                           autoComplete="new-password"
                           className="pl-10"
-                          {...field} 
+                           disabled={isLoading}
+                          {...field}
                         />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          className="absolute right-2 top-2.5 p-1 rounded hover:bg-muted"
+                          onClick={() => setShowPassword((v) => !v)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -136,22 +154,35 @@ export default function SignUpPage() {
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="••••••••" 
-                          type="password"
+                        <Input
+                          placeholder="••••••••"
+                          type={showPassword ? "text" : "password"}
                           autoComplete="new-password"
                           className="pl-10"
-                          {...field} 
+                           disabled={isLoading}
+                          {...field}
                         />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          className="absolute right-2 top-2.5 p-1 rounded hover:bg-muted"
+                          onClick={() => setShowPassword((v) => !v)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
-                className="w-full mt-6" 
+              <Button
+                type="submit"
+                className="w-full mt-6"
                 disabled={isLoading}
                 variant="outline"
               >
@@ -163,7 +194,12 @@ export default function SignUpPage() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 border-t pt-6">
           <div className="text-sm text-center">
-            <span>¿Ya tienes cuenta? <Link href="/auth/login" className="text-primary hover:underline">Iniciar sesión</Link></span>
+            <span>
+              ¿Ya tienes cuenta?{" "}
+              <Link href="/auth/login" className="p-0 underline">
+                Iniciar sesión
+              </Link>
+            </span>
           </div>
         </CardFooter>
       </Card>

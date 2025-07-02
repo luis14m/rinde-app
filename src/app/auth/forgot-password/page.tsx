@@ -19,9 +19,9 @@ import { SubmitButton } from "@/components/submit-button";
 
 export default function ForgotPasswordForm({
   className,
-  searchParams,
+  searchParams, // destructured, will not be included in ...props
   ...props
-}: React.ComponentPropsWithoutRef<"div"> & { searchParams?: any }) {
+}: Omit<React.ComponentPropsWithoutRef<"div">, "searchParams"> & { searchParams?: any }) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,13 +48,7 @@ export default function ForgotPasswordForm({
   };
 
   return (
-    <div
-      className={cn(
-        "container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12",
-        className
-      )}
-      {...props}
-    >
+    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
       {success ? (
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader>

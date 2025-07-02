@@ -40,7 +40,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // 👈 Nuevo estado
+  const [showPassword, setShowPassword] = useState(false); //Nuevo estado
   const router = useRouter();
 
   const form = useForm<FormValues>({
@@ -140,7 +140,7 @@ export default function LoginPage() {
                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="••••••••"
-                          type={showPassword ? "text" : "password"} // 👈 Cambia el tipo
+                          type={showPassword ? "text" : "password"} //Cambia el tipo
                           className="pl-10 pr-10"
                           disabled={isLoading}
                           {...field}

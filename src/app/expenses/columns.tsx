@@ -28,7 +28,7 @@ import { updateExpense, storeExpense } from "@/app/expenses/actions/server.actio
 import { downloadDocument } from "@/app/expenses/actions/client.actions";
 import { Expense, FileMetadata } from "@/types/expenses";
 import { formatMonto } from "@/utils/formatters";
-import StateLabel from "@/components/expenses/StateLabel";
+import StateLabel from "@/components/expenses/state-badge";
 
 export const columns: ColumnDef<Expense>[] = [
   {

@@ -29,6 +29,7 @@ import {
   TYPES_MIME,
 } from "@/types/expenses";
 import { Files, FileText, Save, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface ExpenseEditProps {
   expense: Expense;
@@ -87,10 +88,10 @@ export function EditExpense({ expense, onClose, onSave }: ExpenseEditProps) {
       };
 
       await onSave(expenseToSave);
+      toast.success("Gasto actualizado exitosamente");
       onClose();
     } catch (error) {
-      console.error("Error al actualizar el gasto:", error);
-      alert("Hubo un error al actualizar el gasto");
+      toast.error("Hubo un error al actualizar el gasto");
     }
   };
 

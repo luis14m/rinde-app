@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getProfileById, updateProfile } from "@/app/profile/actions";
+import { getProfiles, getProfileById, updateProfile } from "@/app/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,11 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex justify-center mt-10">
+      <Card>
+
+
+
+      </Card>
       <Card className="container max-w-2xl py-8 px-6">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Perfil</h1>
@@ -91,6 +96,8 @@ export default async function ProfilePage() {
           </div>
         </form>
       </Card>
+
+      
     </div>
   );
 }

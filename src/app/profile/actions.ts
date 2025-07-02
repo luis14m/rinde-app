@@ -2,6 +2,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { Profile, ProfileUpdate } from "@/types/profiles";
 
+
 // Obtener perfil público por ID
 export async function getProfileById(id: string): Promise<Profile | null> {
   const supabase = await createClient();

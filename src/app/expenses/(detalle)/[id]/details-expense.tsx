@@ -20,7 +20,7 @@ import {
 import type { Expense, FileMetadata } from "@/types/expenses";
 import type { Profile } from "@/types/profiles";
 import Link from "next/link";
-import StateLabel from "@/components/expenses/StateLabel";
+import StateLabel from "@/components/expenses/state-badge";
 import { getCurrentUserProfile, updateExpense } from "@/app/expenses/actions/server.actions";
 import { useRouter } from "next/navigation";
 import { EditExpense } from "@/components/expenses/edit-expense";
