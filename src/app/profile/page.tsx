@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
-import { getProfiles, getProfileById, updateProfile } from "@/app/profile/actions";
+import { getProfileById, updateProfile } from "@/app/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import * as z from "zod";
+import { SubmitButton } from "@/components/submit-button";
 
 // Solo validamos el nombre
 const formSchema = z.object({
@@ -45,17 +47,18 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex justify-center mt-10">
-      <Card>
-
-
-
-      </Card>
-      <Card className="container max-w-2xl py-8 px-6">
+      <Card className="container max-w-2xl py-8 px-6 relative">
+        {profileData.is_admin && (
+          <Badge
+            variant="secondary"
+            className="absolute top-4 right-4 z-10 shadow-md bg-blue-600 text-white"
+          >
+            Admin
+          </Badge>
+        )}
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Perfil</h1>
-          <p className="text-muted-foreground">
-           Actualiza tu perfil.
-          </p>
+          <p className="text-muted-foreground">Actualiza tu perfil.</p>
         </div>
         <form action={updateProfileAction} className="space-y-4 mt-8">
           <div className="flex flex-col items-center gap-4">
@@ -86,18 +89,16 @@ export default async function ProfilePage() {
                 required
               />
             </div>
-            <Button
+            <SubmitButton
               type="submit"
               variant="outline"
               className="w-full max-w-xs mx-auto block"
             >
               Guardar cambios
-            </Button>
+            </SubmitButton>
           </div>
         </form>
       </Card>
-
-      
     </div>
   );
 }

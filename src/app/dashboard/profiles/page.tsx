@@ -1,4 +1,4 @@
-// page.tsx
+'use client';
 import { useState, useEffect } from "react";
 import { getColumns } from "./columns";
 import { DataTable } from "./data-table";
@@ -58,4 +58,4 @@ export default function ProfilePage() {
       </Card>
     </div>
   );
-}
+}''

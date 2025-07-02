@@ -70,7 +70,7 @@ export async function getExpenses(): Promise<Expense[]> {
   const { data, error } = await supabase
     .from("expenses")
     .select("*")
-    .eq("user_id", user.id)
+    //.eq("user_id", user.id)
     .eq("archivado", false)
     .order("created_at", { ascending: false });
 

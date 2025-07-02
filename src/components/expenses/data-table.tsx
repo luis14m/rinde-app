@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Search, User, Clock, CircleX, Filter, CircleCheckBig } from "lucide-react";
+import { Search, User, Clock, CircleX, Filter, CircleCheckBig, EyeOff, Eye } from "lucide-react";
 import { formatMonto } from "@/utils/formatters";
 import { Expense } from "@/types/expenses";
 import { createClient } from "@/utils/supabase/client";
@@ -35,6 +35,7 @@ import DownloadExcelButton from "@/components/expenses/DownloadExcelButton";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTableViewOptions } from "../ui/data-table-view-options";
 
 interface EditableExpense extends Expense {
   isEditing?: boolean;
@@ -51,11 +52,18 @@ interface Filters {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+
+  enableSimplifiedView?: boolean;
+  simplifiedColumns?: string[];
+
+}
 }
 
 export function DataTable<TData extends Expense, TValue>({
   columns,
   data,
+   enableSimplifiedView = false,
+  simplifiedColumns = [],
 }: DataTableProps<TData, TValue>) {
   // Elimina expenses y fetchExpenses, usa data directamente
   const [filters, setFilters] = useState<Filters>({
@@ -65,6 +73,12 @@ export function DataTable<TData extends Expense, TValue>({
 
   });
   const [user, setUser] = useState<{ email: string } | null>(null);
+  const [simplifiedView, setSimplifiedView] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("simplifiedView") === "true";
+    }
+    return false;
+  });
 
   useEffect(() => {
     // Solo obtener usuario para mostrar email
@@ -115,7 +129,7 @@ export function DataTable<TData extends Expense, TValue>({
   const balance = totalAbono - totalAmount;
 
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    useState<VisibilityState>({});
   // Use filteredExpenses as the data for the table
   const table = useReactTable({
     data: filteredExpenses as TData[],
@@ -127,6 +141,19 @@ export function DataTable<TData extends Expense, TValue>({
       columnVisibility,
     },
   });
+
+  useEffect(() => {
+    if (enableSimplifiedView) {
+      const newVisibility = columns.reduce((acc, col) => {
+        acc[col.id as string] = simplifiedView
+          ? !simplifiedColumns.includes(col.id as string)
+          : true;
+        return acc;
+      }, {} as VisibilityState);
+
+      setColumnVisibility(newVisibility);
+    }
+  }, [simplifiedView, columns, enableSimplifiedView, simplifiedColumns]);
 
   return (
     <div className="space-y-4 max-w-[95vw] mx-auto">
@@ -205,35 +232,22 @@ export function DataTable<TData extends Expense, TValue>({
                 className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-
-
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columnas
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+           <div className="flex space-x-2">
+          {enableSimplifiedView && (
+            <Button variant="outline" size="sm" onClick={() => setSimplifiedView(!simplifiedView)}>
+              {simplifiedView ? (
+                <EyeOff className="w-4 h-4 mr-1" />
+              ) : (
+                <Eye className="w-4 h-4 mr-1" />
+              )}
+              {simplifiedView ? "Vista completa" : "Vista simplificada"}
+            </Button>
+          )}
+          <DataTableViewOptions table={table} />
+        </div>
+
+          
           <DownloadExcelButton
             expenses={filteredExpenses}
             visibleColumns={table.getVisibleLeafColumns().map((col) => col.id)}

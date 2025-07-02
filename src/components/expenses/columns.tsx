@@ -1,30 +1,16 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  MoreHorizontal,
-  Archive,
-  Eye,
-  SquarePen,
-  Clock,
-  CircleCheckBig,
-  CircleX,
-  Download,
-} from "lucide-react";
+import { Archive, Eye, SquarePen, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
 import { EditExpense } from "@/components/expenses/edit-expense";
 import { useRouter } from "next/navigation";
 
-import { updateExpense, storeExpense } from "@/app/expenses/actions/server.actions";
+import {
+  updateExpense,
+  storeExpense,
+} from "@/app/expenses/actions/server.actions";
 import { downloadDocument } from "@/app/expenses/actions/client.actions";
 import { Expense, FileMetadata } from "@/types/expenses";
 import { formatMonto } from "@/utils/formatters";
@@ -48,7 +34,7 @@ export const columns: ColumnDef<Expense>[] = [
       return formatFecha(fechaRaw as string);
     },
   },
-// ...existing code...
+  // ...existing code...
   {
     id: "nombre_rendidor",
     accessorKey: "nombre_rendidor",
@@ -119,7 +105,7 @@ export const columns: ColumnDef<Expense>[] = [
     header: "Documentos",
     cell: ({ row }) => {
       const documentos = row.getValue("documentos") as FileMetadata[];
-      
+
       return (
         <div className="space-y-4">
           {documentos?.map((doc, index) => (
@@ -141,7 +127,7 @@ export const columns: ColumnDef<Expense>[] = [
         </div>
       );
     },
-  }, 
+  },
   {
     id: "estado",
     accessorKey: "estado",
@@ -149,8 +135,7 @@ export const columns: ColumnDef<Expense>[] = [
     cell: ({ row }) => {
       const estado = row.getValue("estado") as string;
       return <StateLabel estado={estado} />;
-    }
-      
+    },
   },
   {
     id: "acciones",

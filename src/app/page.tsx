@@ -3,8 +3,8 @@
 // Import necessary modules and components
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { DataTable } from "@/app/expenses/data-table";
-import { columns } from "@/app/expenses/columns";
+import { DataTable } from "@/components/expenses/data-table";
+import { columns } from "@/components/expenses/columns";
 import { getExpenses } from "@/app/expenses/actions/server.actions";
 
 
