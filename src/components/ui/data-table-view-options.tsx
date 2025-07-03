@@ -13,13 +13,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
-interface DataTableViewOptionsProps<TData> {
-  table: Table<TData>
-}
-
 export function DataTableViewOptions<TData>({
   table,
-}: DataTableViewOptionsProps<TData>) {
+}: {
+  table: Table<TData>
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,7 +31,7 @@ export function DataTableViewOptions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Elegir columnas</DropdownMenuLabel>
+        <DropdownMenuLabel>Seleccionar</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

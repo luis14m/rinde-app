@@ -13,47 +13,16 @@ SET row_security = off;
 
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 
-
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
-
-
-
-
 
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
 
 
-
-
-
-
 CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
 
 
-
-
-
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE TYPE "public"."estado_ccosto" AS ENUM (
-    'Ejecucion',
-    'Suspendido',
-    'Terminado'
-);
-
-
-ALTER TYPE "public"."estado_ccosto" OWNER TO "postgres";
-
-
-
-
 
 CREATE OR REPLACE FUNCTION "public"."set_admin_role"("user_email" "text") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
@@ -73,34 +42,18 @@ begin
 end;
 $$;
 
-
 ALTER FUNCTION "public"."set_admin_role"("user_email" "text") OWNER TO "postgres";
 
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
 
-
-
-
-
 ALTER TABLE "public"."profiles" OWNER TO "postgres";
-
-
-CREATE OR REPLACE VIEW "public"."admins" WITH ("security_invoker"='on') AS
- SELECT "email"
-   FROM "public"."profiles"
-  WHERE ("is_admin" = true);
 
 
 ALTER VIEW "public"."admins" OWNER TO "postgres";
 
-
-
-
 ALTER TABLE "public"."ccostos" OWNER TO "postgres";
-
-
 
 ALTER TABLE "public"."expenses" OWNER TO "postgres";
 

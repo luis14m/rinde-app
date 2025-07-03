@@ -6,3 +6,8 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"()
 );
+
+CREATE OR REPLACE VIEW "public"."admins" WITH ("security_invoker"='on') AS
+ SELECT "email"
+   FROM "public"."profiles"
+  WHERE ("is_admin" = true);

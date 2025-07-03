@@ -8,3 +8,13 @@ CREATE TABLE IF NOT EXISTS "public"."ccostos" (
     "user_id" "uuid",
     "created_at" timestamp with time zone DEFAULT "now"()
 );
+
+
+CREATE TYPE "public"."estado_ccosto" AS ENUM (
+    'Ejecucion',
+    'Suspendido',
+    'Terminado'
+);
+
+
+ALTER TYPE "public"."estado_ccosto" OWNER TO "postgres";

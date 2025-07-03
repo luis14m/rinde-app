@@ -65,9 +65,6 @@ USING (
 --All policies are permissive by default, meaning they allow access unless explicitly restricted.
 -- This file contains policies for the Supabase project, allowing various actions on the database and storage.
 
-
-
-
 create policy "Allow authenticated uploads"
 on "storage"."objects"
 as permissive

@@ -57,7 +57,7 @@ interface DataTableProps<TData, TValue> {
   simplifiedColumns?: string[];
 
 }
-}
+
 
 export function DataTable<TData extends Expense, TValue>({
   columns,
@@ -244,7 +244,7 @@ export function DataTable<TData extends Expense, TValue>({
               {simplifiedView ? "Vista completa" : "Vista simplificada"}
             </Button>
           )}
-          <DataTableViewOptions table={table} />
+         
         </div>
 
           
@@ -252,6 +252,9 @@ export function DataTable<TData extends Expense, TValue>({
             expenses={filteredExpenses}
             visibleColumns={table.getVisibleLeafColumns().map((col) => col.id)}
           />
+
+           
+
           {/* DropdownMenu filtro de estados a la derecha */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -287,6 +290,8 @@ export function DataTable<TData extends Expense, TValue>({
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <DataTableViewOptions table={table} />
         </div>
       </div>
 

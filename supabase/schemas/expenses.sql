@@ -42,3 +42,14 @@ CREATE TABLE IF NOT EXISTS "public"."expenses" (
 ALTER TYPE "public"."estado_rendicion" OWNER TO "postgres";
 
 ALTER TYPE "public"."tipo_documento" OWNER TO "postgres";
+
+CREATE TABLE IF NOT EXISTS views (
+  id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL, -- nombre de la vista personalizada
+  tabla TEXT NOT NULL, -- por si en el futuro quieres guardar vistas de otras tablas
+  columns TEXT[] NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  user_id UUID NOT NULL,
+  UNIQUE (user_id, tabla)
+);
+

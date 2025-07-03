@@ -16,17 +16,20 @@ import { Expense, FileMetadata } from "@/types/expenses";
 import { formatMonto } from "@/utils/formatters";
 import StateLabel from "@/components/expenses/state-badge";
 
+
 export const columns: ColumnDef<Expense>[] = [
   {
     id: "fecha",
     accessorKey: "fecha",
-    header: "Fecha",
+   header: "Fecha",
+
+  
     cell: ({ row }) => {
       const fechaRaw = row.getValue("fecha");
-      // No usar new Date(fecha), solo cortar el string ISO
+      // No usar new Date(fecha) la Fecha viene en Date
       function formatFecha(fecha: string) {
         if (!fecha) return "";
-        // Espera formato: "YYYY-MM-DD..." (ISO)
+        // Espera formato: "YYYY-MM-DD" (date)
         // Tomar solo los primeros 10 caracteres
         const [year, month, day] = fecha.slice(0, 10).split("-");
         return `${day}-${month}-${year}`;
@@ -36,7 +39,7 @@ export const columns: ColumnDef<Expense>[] = [
   },
   // ...existing code...
   {
-    id: "nombre_rendidor",
+    id: "rendidor",
     accessorKey: "nombre_rendidor",
     header: "Rendidor",
   },
@@ -62,7 +65,7 @@ export const columns: ColumnDef<Expense>[] = [
   },
 
   {
-    id: "numero_documento",
+    id: "nº_documento",
     accessorKey: "numero_documento",
     header: "N° Doc.",
   },
@@ -90,11 +93,12 @@ export const columns: ColumnDef<Expense>[] = [
 
   {
     id: "balance",
+    accessorKey: "balance",
     header: "Balance",
     cell: ({ row }) => {
       const abono = Number(row.getValue("abono")) || 0;
       const gasto = Number(row.getValue("gasto")) || 0;
-      const balance = abono - gasto;
+      const balance = gasto-abono;
       const formatted = formatMonto(balance);
       return formatted;
     },
