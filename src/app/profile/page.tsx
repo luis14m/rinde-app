@@ -89,13 +89,13 @@ export default async function ProfilePage() {
                 required
               />
             </div>
-            <SubmitButton
-              type="submit"
-              variant="outline"
-              className="w-full max-w-xs mx-auto block"
-            >
-              Guardar cambios
-            </SubmitButton>
+
+            <div className="flex items-center gap-2 w-full max-w-xs">
+              <span className="w-32" />
+              <SubmitButton type="submit" className="w-full">
+                Guardar cambios
+              </SubmitButton>
+            </div>
           </div>
         </form>
       </Card>

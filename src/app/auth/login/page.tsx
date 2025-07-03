@@ -24,9 +24,10 @@ import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
+import { SubmitButton } from "@/components/submit-button";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
@@ -163,15 +164,13 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="w-full mt-6"
-                disabled={isLoading}
-                variant="outline"
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <SubmitButton
+              type="submit"
+              variant="outline"
+              disabled={isLoading}
+              className="w-full mt-6">
                 Iniciar sesión
-              </Button>
+              </SubmitButton>
             </form>
           </Form>
         </CardContent>

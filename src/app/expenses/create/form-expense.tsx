@@ -33,8 +33,9 @@ import {
 import { createExpense } from "@/app/expenses/actions/server.actions";
 import { uploadDocuments } from "@/app/expenses/actions/client.actions"; // Asegúrate de importar esto
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
-
+import { Files, Info, Save } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 // Esquema de validación con Zod
 const formSchema = z.object({
   nombre_rendidor: z.string().min(1, "El nombre rendidor es obligatorio"),
@@ -67,7 +68,8 @@ export default function FormExpense() {
     try {
       // Subir documentos a Supabase
       const uploadedDocuments = await uploadDocuments(data.documentos);
-      console.log("Documentos subidos:", uploadedDocuments);
+
+      toast("Documentos subidos");
 
       // Convertir FileMetadata[] a objetos planos
       const plainDocuments = uploadedDocuments.map((doc) => ({
@@ -91,7 +93,7 @@ export default function FormExpense() {
 
       // Crear expense en Supabase
       const result = await createExpense(expenseData);
-      console.log("Resultado de createExpense:", result); // Añadir este log
+      toast("Gasto guardado con éxito ✅");
 
       if (result && result.success) {
         // Verificar que result existe y success es true
@@ -102,10 +104,12 @@ export default function FormExpense() {
       } else {
         const errorMessage = result?.error || "Error desconocido";
         console.error("Error en createExpense:", errorMessage); // Añadir este log
+        toast("Error en createExpense"); // Añadir este log
         setMensaje(`Error: ${errorMessage}`);
       }
     } catch (error) {
       console.error("Error completo:", error); // Mejorar el log de error
+      toast("Error completo"); // Mejorar el log de error
       setMensaje(
         error instanceof Error ? error.message : "Error al guardar el gasto"
       );
@@ -115,208 +119,250 @@ export default function FormExpense() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-black  text-center">
-        Registro de Gastos
-      </h1>
+    <div className="container mx-auto p-4">
+      <div className="mb-4">
+        <Button variant="outline" onClick={() => router.push("/")}>
+          Volver a la lista
+        </Button>
+      </div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Registro de Gastos</h1>
+      </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Campo Nombre */}
-          <FormField
-            control={form.control}
-            name="nombre_rendidor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rendidor</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nombre del Rendidor" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campo RUT */}
-          <FormField
-            control={form.control}
-            name="rut_emisor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rut Emisor dcto</FormLabel>
-                <FormControl>
-                  <Input placeholder="12345678-9" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-           {/* Campo nombre Emisor */}
-          <FormField
-            control={form.control}
-            name="nombre_emisor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre Emisor dcto</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nombre o Razon social" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campo Motivo */}
-          <FormField
-            control={form.control}
-            name="motivo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Motivo</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Descripción del motivo" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campos Gasto y Abono en la misma línea */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="gasto"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gasto"</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Gasto"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="abono"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Abono</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Abono"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-         
-         
-          {/* Campo Número de Documento */}
-          <FormField
-            control={form.control}
-            name="numero_documento"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Documento</FormLabel>
-                <FormControl>
-                  <Input placeholder="Número de Documento" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campo Tipo de Documento */}
-          <FormField
-            control={form.control}
-            name="tipo_documento"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Documento</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione un tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tipo_documento.map((tipo) => (
-                        <SelectItem key={tipo} value={tipo}>
-                          {tipo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campo Fecha */}
-          <FormField
-            control={form.control}
-            name="fecha"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fecha del Gasto</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Campo Documentos */}
-          <FormField
-            control={form.control}
-            name="documentos"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subir Documentos</FormLabel>
-                <FormControl>
-                  <FileUploadZone
-                    files={field.value}
-                    onFilesAdd={(files) =>
-                      field.onChange([...field.value, ...files])
-                    }
-                    onFileRemove={(index) => {
-                      const newFiles = [...field.value];
-                      newFiles.splice(index, 1);
-                      field.onChange(newFiles);
-                    }}
-                    accept={TYPES_MIME}
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex flex-col md:flex-row gap-6">
+            <Card className="flex-[2] min-w-[320px]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 justify-between w-full">
+                  <span className="flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    Información del Gasto
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  {/* Campo Nombre Rendidor */}
+                  <FormField
+                    control={form.control}
+                    name="nombre_rendidor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre Rendidor <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre Rendidor" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  {/* Campo RUT Rendidor */}
+                  <FormField
+                    control={form.control}
+                    name="rut_rendidor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RUT Rendidor <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="12345678-9" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-          {/* Botones */}
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={() => router.push("/")}>
+                  {/* Campo Razón Social Emisor */}
+                  <FormField
+                    control={form.control}
+                    name="nombre_emisor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Razón Social Emisor <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="Razón Social Proveedor" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Campo RUT Emisor */}
+                  <FormField
+                    control={form.control}
+                    name="rut_emisor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RUT Emisor <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="987654321-0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Campo Motivo */}
+                  <FormField
+                    control={form.control}
+                    name="motivo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Motivo <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Motivo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   {/* Campo Fecha */}
+                   <FormField
+                    control={form.control}
+                    name="fecha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fecha del Gasto <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Campo Gasto */}
+                  <FormField
+                    control={form.control}
+                    name="gasto"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monto <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Monto"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Campo Abono */}
+                  <FormField
+                    control={form.control}
+                    name="abono"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Abono</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Abono"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Campo Número de Documento */}
+                  <FormField
+                    control={form.control}
+                    name="numero_documento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nº Documento <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="123456789" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Campo Tipo de Documento */}
+                  <FormField
+                    control={form.control}
+                    name="tipo_documento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Documento <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione un tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {tipo_documento.map((tipo) => (
+                                <SelectItem key={tipo} value={tipo}>
+                                  {tipo}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="flex-1 min-w-[220px]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Files className="w-4 h-4" />
+                  Documentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="documentos"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subir Documentos <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <FileUploadZone
+                          files={field.value}
+                          onFilesAdd={(files) =>
+                            field.onChange([...field.value, ...files])
+                          }
+                          onFileRemove={(index) => {
+                            const newFiles = [...field.value];
+                            newFiles.splice(index, 1);
+                            field.onChange(newFiles);
+                          }}
+                          accept={TYPES_MIME}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="flex justify-end gap-4 mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/")}
+            >
               Cancelar
             </Button>
-            <Button type="submit"  disabled={loading}>
-              <Save />
+            <Button type="submit" disabled={loading}>
+              <Save className="mr-2" />
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </div>
-
-          {/* Mensaje de estado */}
           {mensaje && (
             <p className="text-center mt-4 text-red-500">{mensaje}</p>
           )}
