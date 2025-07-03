@@ -69,7 +69,7 @@ export default function FormExpense() {
       // Subir documentos a Supabase
       const uploadedDocuments = await uploadDocuments(data.documentos);
 
-      toast("Documentos subidos");
+      //toast("Documentos subidos");
 
       // Convertir FileMetadata[] a objetos planos
       const plainDocuments = uploadedDocuments.map((doc) => ({
@@ -93,11 +93,11 @@ export default function FormExpense() {
 
       // Crear expense en Supabase
       const result = await createExpense(expenseData);
-      toast("Gasto guardado con éxito ✅");
+      
 
       if (result && result.success) {
         // Verificar que result existe y success es true
-        setMensaje("Gasto guardado con éxito ✅");
+        toast("Gasto guardado con éxito ✅");
         form.reset();
 
         router.push("/");
