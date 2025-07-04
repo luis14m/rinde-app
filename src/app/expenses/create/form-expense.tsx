@@ -30,8 +30,8 @@ import {
   tipo_documento,
   TYPES_MIME,
 } from "@/types/expenses";
-import { createExpense } from "@/app/expenses/actions/server.actions";
-import { uploadDocuments } from "@/app/expenses/actions/client.actions"; // Asegúrate de importar esto
+import { createExpense } from "@/lib/actions/server.actions";
+import { uploadDocuments } from "@/lib/actions/client.actions"; // Asegúrate de importar esto
 import { useRouter } from "next/navigation";
 import { Files, Info, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

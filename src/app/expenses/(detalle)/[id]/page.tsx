@@ -2,7 +2,7 @@
 import React from "react";
 import {
   getExpenseById
-} from "@/app/expenses/actions/server.actions";
+} from "@/lib/actions/server.actions";
 
 import DetailsExpense from "./details-expense";
 

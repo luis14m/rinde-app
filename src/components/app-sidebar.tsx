@@ -19,19 +19,21 @@ const data = {
   navMain: [
     {
       title: "Administar Expenses",
-      url: "#",
+      url: "/dashboard",
       items: [
         {
           title: "Ver todos",
-          url: "#",
+          url: "/dashboard",
+          isActive: true,
         },
+  
         {
           title: "Ver archivados",
-          url: "#",
+          url: "/dashboard/expenses/archiveds",
         },
         {
             title:"Vista guardada",
-            url:"#",
+            url:"/dashboard/expenses/views",
         }
       ],
     },

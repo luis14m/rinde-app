@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   downloadDocument,
   updateExpenseState,
-} from "@/app/expenses/actions/client.actions";
+} from "@/lib/actions/client.actions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ import type { Expense, FileMetadata } from "@/types/expenses";
 import type { Profile } from "@/types/profiles";
 import Link from "next/link";
 import StateLabel from "@/components/expenses/state-badge";
-import { getCurrentUserProfile, updateExpense } from "@/app/expenses/actions/server.actions";
+import { getCurrentUserProfile, updateExpense } from "@/lib/actions/server.actions";
 import { useRouter } from "next/navigation";
 import { EditExpense } from "@/components/expenses/edit-expense";
 

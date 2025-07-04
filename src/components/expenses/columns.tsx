@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation";
 import {
   updateExpense,
   storeExpense,
-} from "@/app/expenses/actions/server.actions";
-import { downloadDocument } from "@/app/expenses/actions/client.actions";
+} from "@/lib/actions/server.actions";
+import { downloadDocument } from "@/lib/actions/client.actions";
 import { Expense, FileMetadata } from "@/types/expenses";
 import { formatMonto } from "@/utils/formatters";
 import StateLabel from "@/components/expenses/state-badge";

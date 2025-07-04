@@ -5,11 +5,28 @@ import { DataTable } from "./data-table";
 import { Profile } from "@/types/profiles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getProfiles } from "./actions";
+import { updateProfile } from "./actions"; //
 // ...otros imports
 
 export default function ProfilePage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selected, setSelected] = useState<Profile | null>(null);
+
+
+// Dentro del componente:
+const [loading, setLoading] = useState(false);
+
+async function handleUpdateIsAdmin(profileId: string, isAdmin: boolean) {
+  setLoading(true);
+  try {
+    await updateProfile(profileId, { is_admin: isAdmin });
+    // Aquí podrías refrescar los datos del usuario o mostrar un mensaje de éxito
+  } catch (error) {
+    // Maneja el error (toast, alert, etc.)
+  } finally {
+    setLoading(false);
+  }
+}
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -47,8 +64,20 @@ export default function ProfilePage() {
                 <span className="font-semibold">Email: </span>{selected.email}
               </div>
               <div>
-                <span className="font-semibold">Fecha de creación: </span>{selected.created_at}
-              </div>
+  <span className="font-semibold">Is Admin: </span>
+  <select
+    value={selected.is_admin ? "true" : "false"}
+    onChange={async (e) => {
+      const newValue = e.target.value === "true";
+      // Llama a la función para actualizar en la base de datos
+      await handleUpdateIsAdmin(selected.id, newValue);
+    }}
+    className="border rounded px-2 py-1 ml-2"
+  >
+    <option value="true">Sí</option>
+    <option value="false">No</option>
+  </select>
+</div>
               {/* Agrega más campos si es necesario */}
             </div>
           ) : (

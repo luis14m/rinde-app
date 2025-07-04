@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { FileUploadZone } from "@/components/ui/file-upload-zone";
-import { uploadDocuments } from "@/app/expenses/actions/client.actions"; // Asegúrate de importar esto
+import { uploadDocuments } from "@/lib/actions/client.actions"; // Asegúrate de importar esto
 
 import {
   Expense,

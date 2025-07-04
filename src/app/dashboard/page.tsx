@@ -1,41 +1,33 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { redirect } from 'next/navigation';
-import { getUserAndProfile } from './actions';
+
+import { redirect } from "next/navigation";
+
+
+import { getAllExpenses } from "./expenses/actions";
+
+import { DataTable } from "@/components/expenses/data-table";
+import { columns } from "@/components/expenses/columns";
+
+import { getUserAndProfile } from "./actions";
 
 export default async function Dashboard() {
   const { user, profile } = await getUserAndProfile();
 
   if (!user || !profile) {
-    redirect('/auth/login');
+    redirect("/auth/login");
   }
 
   if (!profile.is_admin) {
-    redirect('/profile');
+    redirect("/profile");
   }
 
+  // Obtener gastos en el servidor
+  const expenses = await getAllExpenses();
+
   return (
-    <SidebarProvider>
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-mr-1 ml-auto rotate-180" />
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
+    <div className="flex-1 w-full flex flex-col gap-12 p-8">
+          <div className="container mx-auto">
+            <DataTable columns={columns} data={expenses} />
           </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
         </div>
-      </SidebarInset>
-      <AppSidebar side="right" />
-    </SidebarProvider>
-  )
+  );
 }
-
-
